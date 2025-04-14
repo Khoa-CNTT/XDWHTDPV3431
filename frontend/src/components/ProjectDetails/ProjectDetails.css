@@ -1,0 +1,72 @@
+.project-details {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .project-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .project-image {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 20px;
+    border-radius: 5px;
+  }
+  
+  .project-info {
+    font-size: 16px;
+    margin: 10px 0;
+  }
+  
+  .project-subtitle {
+    font-size: 20px;
+    margin: 20px 0 10px;
+    color: #444;
+  }
+  
+  .transaction-list {
+    list-style-type: none;
+    padding: 0;
+    text-align: left;
+  }
+  
+  .transaction-item {
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .no-transactions {
+    font-style: italic;
+    color: #666;
+  }
+  
+  .donate-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .donate-button:hover {
+    background-color: #218838;
+  }
+  
+  .loading {
+    text-align: center;
+    font-size: 18px;
+  }
+  
+  .error {
+    text-align: center;
+    font-size: 18px;
+    color: red;
+  }

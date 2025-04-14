@@ -1,0 +1,92 @@
+.guide-container {
+  max-width: 700px;
+  min-height: 600px;
+  margin: 40px auto;
+  padding: 40px;
+  border-radius: 10px;
+  background: #f9f9f9;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+h1 {
+  color: #333;
+}
+
+.tab-buttons {
+  display: flex;
+  justify-content: center;
+  margin: 30px 0;
+}
+
+.tab-buttons button {
+  /* Các nút trong tab-buttons */
+  padding: 10px 15px;
+  margin: 0 10px;
+  border: none;
+  background-color: #f8b6d2; /* Màu hồng nhạt */
+  color: white;
+  border-radius: 5px;
+  transition: 0.3s;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.tab-buttons button.active {
+  background-color: #e91e63; /* Màu hồng đậm */
+}
+
+.tab-buttons button:hover {
+  background-color: #d81b60;
+}
+
+.tab-content .tab > * {
+  margin-bottom: 10px; /* Tạo khoảng cách giữa các item trong block tab content */
+}
+
+.tab-content .tab {
+  display: none;
+
+  background: white;
+  padding: 30px;
+  border-radius: 5px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+
+  margin-top: 60px; /* Tạo khoảng cách trên với block tab-buttons */
+}
+
+.tab-content .tab.active {
+  display: block;
+}
+
+/* Nội dung khi nhấn nút xem chi tiết */
+.detail-content {
+  display: none;
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #fff3f8;
+  border-radius: 5px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  text-align: left;
+}
+
+.detail-content.show {
+  display: block;
+}
+
+.toggle-btn {
+  /* Nút xem chi tiết */
+  margin-top: 10px;
+  padding: 8px 12px;
+  background-color: #e91e63;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+.toggle-btn:hover {
+  background-color: #c2185b;
+}

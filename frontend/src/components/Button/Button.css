@@ -1,0 +1,64 @@
+/* Style cơ bản chung */
+.custom-button {
+  background-color: #ED1651; 
+  padding: 10px 10px;
+  border: none;
+  margin: 5px 5px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Variant: primary (mặc định) */
+.custom-button--primary {
+  background-color: #ED1651;
+  color: white;
+}
+
+.custom-button--primary:hover {
+  background-color: #c81344; /* Đậm hơn khi hover */
+}
+
+/* Variant: slide */
+.custom-button--slide {
+  position: relative;
+  background-color: #eb2e60; 
+  color: white;
+  border-radius: 25px;
+  overflow: hidden;
+  padding: 20px 20px;
+}
+
+.custom-button--slide::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.3); 
+  transition: left 0.4s ease;
+  z-index: 0;
+}
+
+.custom-button--slide:hover::before {
+  left: 0; 
+}
+
+.custom-button--slide .button-text {
+  position: relative;
+  z-index: 1; 
+  transition: transform 0.4s ease; 
+}
+
+.custom-button--slide:hover .button-text {
+  transform: translateX(5px); 
+}
+
+.button-text {
+  position: relative;
+}
