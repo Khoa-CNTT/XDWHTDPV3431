@@ -1,126 +1,372 @@
-.create-page {
-    padding: 20px;
-    text-align: center;
-    background-color: #f5f5f5;
-    min-height: 100vh;
+.create-project-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 40px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  text-align: center;
 }
 
-.create-page h1 {
-    font-size: 2em;
-    margin-bottom: 10px;
+.create-header {
+  margin-bottom: 40px;
+  position: relative;
 }
 
-.create-page p {
-    font-size: 1.1em;
-    color: #666;
-    margin-bottom: 20px;
+.header-icon {
+  font-size: 60px;
+  color: #0070ba;
+  margin-bottom: 20px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+h2 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+  font-size: 32px;
+  font-weight: 700;
+  position: relative;
+  display: inline-block;
+}
+
+h2:after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, #0070ba, #2ecc71);
+  border-radius: 2px;
+}
+
+.header-subtitle {
+  color: #7f8c8d;
+  font-size: 18px;
+  margin-top: 25px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+.paypal-section {
+  margin-bottom: 40px;
+  position: relative;
+}
+
+.paypal-section:before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #e0e0e0, transparent);
+}
+
+.connect-paypal-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0070ba;
+  color: white;
+  padding: 15px 25px;
+  font-size: 18px;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  box-shadow: 0 4px 15px rgba(0, 112, 186, 0.3);
+}
+
+.connect-paypal-btn:hover {
+  background: #005ea6;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 112, 186, 0.4);
+}
+
+.paypal-icon {
+  margin-right: 12px;
+  font-size: 20px;
 }
 
 .create-form {
-    max-width: 800px;
-    /* Tăng từ 500px lên 800px để form rộng hơn */
-    margin: 0 auto;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  position: relative;
+}
+
+.create-form:before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #e0e0e0, transparent);
 }
 
 .form-group {
-    margin-bottom: 15px;
-    text-align: left;
+  text-align: left;
+  position: relative;
 }
 
 .form-group label {
-    display: block;
-    font-size: 1em;
-    color: #333;
-    margin-bottom: 5px;
+  display: block;
+  text-align: left;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #2c3e50;
+  font-size: 16px;
+  transition: all 0.3s ease;
 }
 
-.form-group input,
-.form-group textarea {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 0.9em;
-    box-sizing: border-box;
+.form-group:focus-within label {
+  color: #0070ba;
 }
 
-.form-group textarea {
-    height: 100px;
-    resize: vertical;
+input, textarea, select {
+  width: 100%;
+  padding: 15px 18px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  background-color: #f9f9f9;
+  color: #333;
 }
 
-.qr-group .qr-input-group {
-    display: flex;
-    gap: 10px;
-    align-items: center;
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: #0070ba;
+  box-shadow: 0 0 0 4px rgba(0, 112, 186, 0.1);
+  background-color: #ffffff;
 }
 
-.qr-group input {
-    flex: 1;
+textarea {
+  min-height: 150px;
+  resize: vertical;
+  line-height: 1.6;
 }
 
-.attach-qr-btn {
-    background-color: #3c73c4;
-    color: #fff;
-    padding: 8px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.9em;
-    white-space: nowrap;
-    transition: opacity 0.3s;
+.currency-input-container {
+  position: relative;
 }
 
-.attach-qr-btn:hover {
-    opacity: 0.9;
+.currency-icon {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #0070ba;
+  font-size: 20px;
+  pointer-events: none;
 }
 
 .submit-btn {
-    background-color: #ed1651;
-    color: #fff;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1em;
-    width: 100%;
-    transition: opacity 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0070ba, #2ecc71);
+  color: white;
+  padding: 18px 25px;
+  font-size: 20px;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  margin-top: 20px;
+  box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.submit-btn:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: all 0.6s ease;
+}
+
+.submit-btn:hover:before {
+  left: 100%;
 }
 
 .submit-btn:hover {
-    opacity: 0.9;
+  background: linear-gradient(135deg, #005ea6, #27ae60);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
 }
 
-.submit-status {
-    margin-top: 15px;
-    font-size: 1em;
-    color: #4caf50;
+.submit-btn:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
-.create-form h2 {
-    font-size: 1.5em;
-    color: #333;
-    margin: 20px 0 10px;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 5px;
+.submit-icon {
+  margin-right: 12px;
+  font-size: 22px;
 }
 
-.checkbox-group {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 15px;
-    justify-content: space-evenly;
-    align-items: center;
+/* Error styling */
+.error-input {
+  border-color: #e74c3c !important;
 }
 
-.checkbox-group label {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.9em;
+.error-message {
+  display: flex;
+  align-items: center;
+  color: #e74c3c;
+  font-size: 14px;
+  margin-top: 8px;
+  animation: fadeIn 0.3s ease;
 }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.error-icon {
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+/* Input hint */
+.input-hint {
+  display: flex;
+  align-items: center;
+  color: #7f8c8d;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+.hint-icon {
+  margin-right: 8px;
+  font-size: 14px;
+  color: #0070ba;
+}
+
+/* Spinner for loading state */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+  margin-right: 10px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Success message */
+.success-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.success-message {
+  text-align: center;
+  padding: 30px;
+  background: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  max-width: 500px;
+  width: 100%;
+  animation: scaleIn 0.5s ease;
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.success-icon {
+  font-size: 60px;
+  color: #2ecc71;
+  margin-bottom: 20px;
+  animation: bounce 1s ease infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.back-button {
+  background: #0070ba;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+}
+
+.back-button:hover {
+  background: #005ea6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 112, 186, 0.3);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .create-project-container {
+    margin: 20px auto;
+    padding: 25px;
+  }
+  
+  h2 {
+    font-size: 28px;
+  }
+  
+  .header-icon {
+    font-size: 50px;
+  }
+  
+  .connect-paypal-btn, .submit-btn {
+    padding: 12px 20px;
+    font-size: 16px;
+  }
+  
+  input, textarea, select {
+    padding: 12px 15px;
+  }
+}
+  

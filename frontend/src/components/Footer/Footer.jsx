@@ -13,6 +13,7 @@ const Footer = () => {
           <Link to="/">Trang chủ</Link>
           <Link to="/projects">Các dự án</Link>
           <Link to="/create">Tạo dự án</Link>
+          <Link to="/donate">Quyên góp</Link>
           <Link to="/guide">Hướng dẫn</Link>
         </div>
         <div className="footer-contact">

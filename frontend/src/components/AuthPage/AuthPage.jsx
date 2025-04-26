@@ -1,83 +1,80 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth, db } from '../../firebase'; // Đảm bảo đã cấu hình firebase.js
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { useAuth } from '../../contexts/AuthContext';
 import Button from '../Button/Button';
 import './AuthPage.css';
 
 const AuthPage = () => {
-  const [isLogin, setIsLogin] = useState(true); // Chuyển đổi giữa đăng nhập và đăng ký
+  const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
-    username: '',
     email: '',
     password: '',
-    role: 'donor', // Mặc định là donor
+    name: '',
+    role: 'user'
   });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login, register } = useAuth();
 
-  // Xử lý thay đổi input
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    setError('');
   };
 
-  // Xử lý đăng ký
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    setError('');
-    try {
-      // Đăng ký với Firebase Authentication
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        formData.email,
-        formData.password
-      );
-      const user = userCredential.user;
-
-      // Thêm thông tin người dùng vào Firestore
-      await setDoc(doc(db, 'users', user.uid), {
-        username: formData.username,
-        email: formData.email,
-        role: user,
-        created_at: new Date().toISOString(),
-      });
-      setFormData({ username: '', email: '', password: '', role: 'donor' });
-      setIsLogin(true); // Chuyển về chế độ đăng nhập sau khi đăng ký
-    } catch (error) {
-      setError(error.message);
+  const validateForm = () => {
+    if (!formData.email || !formData.password) {
+      setError('Email and password are required');
+      return false;
     }
+    if (!isLogin && !formData.name) {
+      setError('Name is required');
+      return false;
+    }
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return false;
+    }
+    return true;
   };
 
-  // Xử lý đăng nhập
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    if (!validateForm()) return;
+
+    setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, formData.email, formData.password);
-      await signInWithEmailAndPassword(auth, formData.email, formData.password);
-      navigate('/');
-    } catch (error) {
-      setError(error.message);
+      if (isLogin) {
+        await login({ email: formData.email, password: formData.password });
+        navigate('/');
+      } else {
+        await register(formData);
+        setError('');
+        setIsLogin(true);
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || 'An error occurred');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="auth-page">
       <div className="auth-container">
-        <h1>{isLogin ? 'Đăng nhập' : 'Đăng ký'}</h1>
-        <form onSubmit={isLogin ? handleLogin : handleRegister}>
+        <h1>{isLogin ? 'Login' : 'Register'}</h1>
+        <form onSubmit={handleSubmit}>
           {!isLogin && (
             <div className="form-group">
-              <label htmlFor="username">Tên người dùng</label>
+              <label htmlFor="name">Name</label>
               <input
                 type="text"
-                id="username"
-                name="username"
-                value={formData.username}
+                id="name"
+                name="name"
+                value={formData.name}
                 onChange={handleChange}
-                placeholder="Nhập tên người dùng"
+                placeholder="Enter your name"
                 required={!isLogin}
               />
             </div>
@@ -90,48 +87,48 @@ const AuthPage = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="Nhập email"
+              placeholder="Enter your email"
               required
             />
           </div>
           <div className="form-group">
-            <label htmlFor="password">Mật khẩu</label>
+            <label htmlFor="password">Password</label>
             <input
               type="password"
               id="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)"
+              placeholder="Enter your password"
               required
             />
           </div>
           {!isLogin && (
             <div className="form-group">
-              <label htmlFor="role">Vai trò</label>
+              <label htmlFor="role">Role</label>
               <select
                 id="role"
                 name="role"
                 value={formData.role}
                 onChange={handleChange}
               >
-                <option value="donor">Người quyên góp</option>
-                <option value="creator">Người tạo dự án</option>
-                <option value="admin">Quản trị viên</option>
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
               </select>
             </div>
           )}
           {error && <p className="error">{error}</p>}
           <Button
-            text={isLogin ? 'Đăng nhập' : 'Đăng ký'}
+            text={isLogin ? 'Login' : 'Register'}
             variant="primary"
             type="submit"
+            disabled={loading}
           />
         </form>
         <p className="toggle-text">
-          {isLogin ? 'Chưa có tài khoản?' : 'Đã có tài khoản?'}
+          {isLogin ? "Don't have an account?" : "Already have an account?"}
           <span onClick={() => setIsLogin(!isLogin)}>
-            {isLogin ? ' Đăng ký ngay' : ' Đăng nhập'}
+            {isLogin ? ' Register' : ' Login'}
           </span>
         </p>
       </div>

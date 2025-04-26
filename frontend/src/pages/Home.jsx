@@ -29,15 +29,15 @@ const Home = () => {
     },
   ];
 
-  // Tự động chuyển slide mỗi 4 giây
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     setCurrentSlide((prev) => (prev + 1) % slides.length);
-  //   }, 4000);
-  //   return () => clearInterval(interval);
-  // }, [slides.length]);
+  //Tự động chuyển slide mỗi 4 giây
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 20000);
+    return () => clearInterval(interval);
+  }, [slides.length]);
 
-  // Hàm chuyển slide thủ công
+  //Hàm chuyển slide thủ công
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
   };
@@ -70,13 +70,6 @@ const Home = () => {
             <p>{slides[currentSlide].description}</p>
             <Link to="/projects"><Button text ="Khám phá các dự án" variant = "slide"/></Link>
           </div>
-          {/* Nút điều hướng */}
-          <button className="nav-btn prev-btn" onClick={prevSlide}>
-            &#10094; {/* Mũi tên trái */}
-          </button>
-          <button className="nav-btn next-btn" onClick={nextSlide}>
-            &#10095; {/* Mũi tên phải */}
-          </button>
         </div>
         <div className="slide-indicators">
           {slides.map((slide, index) => (
@@ -129,7 +122,7 @@ const Home = () => {
             Mỗi đóng góp của bạn giúp chúng tôi mang hy vọng đến những người cần nó nhất. 
             Hãy chung tay xây dựng một thế giới tốt đẹp hơn!
           </p>
-          <Link to="/projects"><Button text="Quyên góp ngay" variant = "slide" /></Link>
+          <Link to="/donate"><Button text="Quyên góp ngay" variant = "slide" /></Link>
         </div>
       </section>
     

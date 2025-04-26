@@ -1,134 +1,188 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from 'react';
+import { FaPaypal, FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaSpinner, FaMoneyBillWave } from 'react-icons/fa';
+import './Create.css';
 
-import { db, collection, addDoc } from "../firebase";
-
-import "./Create.css";
-
-const CreatePage = () => {
+const Create = () => {
   const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    targetAmount: "",
-    detailsLink: "",
-    statementLink: "",
-    qrCode: "",
-    organizerName: "",
-    email: "",
-    phone: "",
-    website: "",
-    legalInfo: "",
-    donationMethods: [],
-    bankAccount: "",
-    refundPolicy: "",
-    commitment: "",
+    title: '',
+    description: '',
+    goal: '',
+    category: 'education',
+    imageUrl: '',
   });
 
-  const [submitStatus, setSubmitStatus] = useState(null);
-  const fileInputRef = useRef(null);
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [paypalConnected, setPaypalConnected] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: type === "checkbox" ? checked : value,
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
     }));
-  };
-
-  const handleCheckboxChange = (e) => {
-    const { value, checked } = e.target;
-    setFormData((prevData) => {
-      const donationMethods = checked
-        ? [...prevData.donationMethods, value]
-        : prevData.donationMethods.filter((method) => method !== value);
-      return { ...prevData, donationMethods };
-    });
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFormData((prevData) => ({
-        ...prevData,
-        qrCode: file.name,
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
       }));
     }
   };
 
-  const handleButtonClick = () => {
-    fileInputRef.current.click();
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!formData.title.trim()) {
+      newErrors.title = 'Vui lòng nhập tên dự án';
+    } else if (formData.title.length < 5) {
+      newErrors.title = 'Tên dự án phải có ít nhất 5 ký tự';
+    }
+
+    if (!formData.description.trim()) {
+      newErrors.description = 'Vui lòng nhập mô tả dự án';
+    } else if (formData.description.length < 50) {
+      newErrors.description = 'Mô tả dự án phải có ít nhất 50 ký tự';
+    }
+
+    if (!formData.goal.trim()) {
+      newErrors.goal = 'Vui lòng nhập mục tiêu gây quỹ';
+    } else if (isNaN(formData.goal) || parseFloat(formData.goal) <= 0) {
+      newErrors.goal = 'Vui lòng nhập số tiền hợp lệ';
+    }
+
+    if (!formData.imageUrl.trim()) {
+      newErrors.imageUrl = 'Vui lòng nhập URL hình ảnh';
+    } else if (!isValidUrl(formData.imageUrl)) {
+      newErrors.imageUrl = 'Vui lòng nhập URL hợp lệ';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const isValidUrl = (url) => {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const connectPaypal = async () => {
+    try {
+      // Simulate PayPal connection
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setPaypalConnected(true);
+    } catch (error) {
+      console.error('Lỗi kết nối PayPal:', error);
+      alert('Không thể kết nối với PayPal. Vui lòng thử lại.');
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Project submitted for approval:", formData);
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    if (!paypalConnected) {
+      alert('Vui lòng kết nối tài khoản PayPal trước');
+      return;
+    }
+
+    setIsSubmitting(true);
 
     try {
-      // Thêm document vào collection "projects"
-      await addDoc(collection(db, "projects"), {
-        name: formData.name || null,
-        description: formData.description || null,
-        targetAmount: formData.targetAmount || null,
-        detailsLink: formData.detailsLink || null,
-        statementLink: formData.statementLink || null,
-        qrCode: formData.qrCode || null,
-        organizerName: formData.organizerName || null,
-        email: formData.email || null,
-        phone: formData.phone || null,
-        website: formData.website || null,
-        legalInfo: formData.legalInfo || null,
-        donationMethods:
-          formData.donationMethods.length > 0 ? formData.donationMethods : null,
-        bankAccount: formData.bankAccount || null,
-        refundPolicy: formData.refundPolicy || null,
-        commitment: formData.commitment || null,
-        createdAt: new Date(),
+      // Simulate PayPal transaction
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Here you would typically interact with PayPal API
+      console.log('Form submitted:', formData);
+      
+      setIsSuccess(true);
+      setFormData({
+        title: '',
+        description: '',
+        goal: '',
+        category: 'education',
+        imageUrl: '',
       });
-
-      setSubmitStatus(
-        "Đã gửi yêu cầu tạo dự án cho admin. Vui lòng chờ duyệt!"
-      );
-      //   setFormData({
-      //     name: "",
-      //     description: "",
-      //     targetAmount: "",
-      //     detailsLink: "",
-      //     statementLink: "",
-      //     qrCode: "",
-      //     organizerName: "",
-      //     email: "",
-      //     phone: "",
-      //     website: "",
-      //     legalInfo: "",
-      //     donationMethods: [],
-      //     bankAccount: "",
-      //     refundPolicy: "",
-      //     commitment: "",
-      //   });
     } catch (error) {
-      console.error("Lỗi khi gửi dự án:", error);
-      setSubmitStatus("Lỗi khi gửi dự án. Vui lòng thử lại!");
+      console.error('Lỗi khi gửi form:', error);
+      alert('Không thể tạo dự án. Vui lòng thử lại.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  const handleBack = () => {
+    setIsSuccess(false);
+  };
+
+  if (isSuccess) {
+    return (
+      <div className="create-project-container">
+        <div className="success-container">
+          <div className="success-message">
+            <FaCheckCircle className="success-icon" />
+            <h2>Dự án đã được tạo thành công!</h2>
+            <p>Dự án của bạn đã được tạo và sẵn sàng nhận quyên góp thông qua PayPal.</p>
+            <button className="back-button" onClick={handleBack}>
+              Tạo Dự Án Khác
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="create-page">
-      <h1>Tạo Dự Án Mới</h1>
-      <p>Điền thông tin chi tiết để gửi yêu cầu tạo dự án</p>
+    <div className="create-project-container">
+      <div className="create-header">
+        <FaPaypal className="header-icon" />
+        <h2>Tạo Dự Án Mới</h2>
+        <p className="header-subtitle">
+          Bắt đầu dự án từ thiện của bạn và nhận quyên góp thông qua PayPal. Kết nối tài khoản PayPal và điền thông tin bên dưới.
+        </p>
+      </div>
+
+      <div className="paypal-section">
+        <button 
+          className="connect-paypal-btn"
+          onClick={connectPaypal}
+          disabled={paypalConnected}
+        >
+          <FaPaypal className="paypal-icon" />
+          {paypalConnected ? 'Đã kết nối PayPal' : 'Kết nối PayPal'}
+        </button>
+      </div>
 
       <form className="create-form" onSubmit={handleSubmit}>
-        {/* Thông tin cơ bản */}
-        <h2>Thông Tin Cơ Bản</h2>
         <div className="form-group">
-          <label htmlFor="name">Tên Dự Án</label>
+          <label htmlFor="title">Tên Dự Án</label>
           <input
             type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Nhập tên dự án"
-            required
+            id="title"
+            name="title"
+            value={formData.title}
+            onChange={handleInputChange}
+            className={errors.title ? 'error-input' : ''}
+            placeholder="Nhập tên dự án của bạn"
           />
+          {errors.title && (
+            <div className="error-message">
+              <FaExclamationCircle className="error-icon" />
+              {errors.title}
+            </div>
+          )}
+          <div className="input-hint">
+            <FaInfoCircle className="hint-icon" />
+            Chọn một tên rõ ràng và mô tả cho dự án của bạn
+          </div>
         </div>
 
         <div className="form-group">
@@ -137,239 +191,116 @@ const CreatePage = () => {
             id="description"
             name="description"
             value={formData.description}
-            onChange={handleChange}
-            placeholder="Nhập mô tả dự án"
-            required
+            onChange={handleInputChange}
+            className={errors.description ? 'error-input' : ''}
+            placeholder="Mô tả chi tiết về dự án của bạn"
           />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="targetAmount">Mục Tiêu Số Tiền (VND)</label>
-          <input
-            type="text"
-            id="targetAmount"
-            name="targetAmount"
-            value={formData.targetAmount}
-            onChange={handleChange}
-            placeholder="Ví dụ: 000,000,000 VND"
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="detailsLink">Link Chi Tiết</label>
-          <input
-            type="url"
-            id="detailsLink"
-            name="detailsLink"
-            value={formData.detailsLink}
-            onChange={handleChange}
-            placeholder="http://example.com/project"
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="statementLink">Link Sao Kê</label>
-          <input
-            type="url"
-            id="statementLink"
-            name="statementLink"
-            value={formData.statementLink}
-            onChange={handleChange}
-            placeholder="http://example.com/statement"
-            required
-          />
-        </div>
-
-        {/* Thông tin người kêu gọi */}
-        <h2>Thông Tin Người Kêu Gọi</h2>
-        <div className="form-group">
-          <label htmlFor="organizerName">
-            Tên Người/Tổ Chức Đứng Ra Kêu Gọi
-          </label>
-          <input
-            type="text"
-            id="organizerName"
-            name="organizerName"
-            value={formData.organizerName}
-            onChange={handleChange}
-            placeholder="Nhập tên cá nhân hoặc tổ chức"
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="email">Email Liên Hệ</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="example@email.com"
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="phone">Số Điện Thoại Liên Hệ</label>
-          <input
-            type="tel"
-            id="phone"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            placeholder="Ví dụ: 0901234567"
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="website">Website (Nếu Có)</label>
-          <input
-            type="url"
-            id="website"
-            name="website"
-            value={formData.website}
-            onChange={handleChange}
-            placeholder="http://example.com"
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="legalInfo">
-            Thông Tin Pháp Lý (Nếu Là Tổ Chức Phi Lợi Nhuận)
-          </label>
-          <textarea
-            id="legalInfo"
-            name="legalInfo"
-            value={formData.legalInfo}
-            onChange={handleChange}
-            placeholder="Thông tin đăng ký pháp lý, giấy phép..."
-          />
-        </div>
-
-        {/* Phương thức đóng góp */}
-        <h2>Phương Thức Đóng Góp</h2>
-        <div className="form-group">
-          <label>Các Hình Thức Quyên Góp</label>
-          <div className="checkbox-group">
-            <label>
-              <input
-                type="checkbox"
-                value="Chuyển khoản"
-                checked={formData.donationMethods.includes("Chuyển khoản")}
-                onChange={handleCheckboxChange}
-              />
-              Chuyển khoản
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                value="Momo"
-                checked={formData.donationMethods.includes("Momo")}
-                onChange={handleCheckboxChange}
-              />
-              Momo
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                value="ZaloPay"
-                checked={formData.donationMethods.includes("ZaloPay")}
-                onChange={handleCheckboxChange}
-              />
-              ZaloPay
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                value="Thẻ tín dụng"
-                checked={formData.donationMethods.includes("Thẻ tín dụng")}
-                onChange={handleCheckboxChange}
-              />
-              Thẻ tín dụng
-            </label>
+          {errors.description && (
+            <div className="error-message">
+              <FaExclamationCircle className="error-icon" />
+              {errors.description}
+            </div>
+          )}
+          <div className="input-hint">
+            <FaInfoCircle className="hint-icon" />
+            Cung cấp mô tả chi tiết về mục tiêu và tác động của dự án
           </div>
         </div>
 
         <div className="form-group">
-          <label htmlFor="bankAccount">
-            Thông Tin Tài Khoản Nhận Quyên Góp
-          </label>
-          <textarea
-            id="bankAccount"
-            name="bankAccount"
-            value={formData.bankAccount}
-            onChange={handleChange}
-            placeholder="Số tài khoản, tên ngân hàng, chi nhánh..."
-            required
-          />
-        </div>
-
-        <div className="form-group qr-group">
-          <label htmlFor="qrCode">Mã QR Thanh Toán</label>
-          <div className="qr-input-group">
+          <label htmlFor="goal">Mục Tiêu Gây Quỹ (VND)</label>
+          <div className="currency-input-container">
             <input
-              type="text"
-              value={formData.qrCode}
-              placeholder="Chọn file jpg, jpeg, png"
-              readOnly
+              type="number"
+              id="goal"
+              name="goal"
+              value={formData.goal}
+              onChange={handleInputChange}
+              className={errors.goal ? 'error-input' : ''}
+              placeholder="Nhập số tiền bằng VND"
+              step="1000"
+              min="0"
             />
-            <input
-              type="file"
-              id="qrCode"
-              name="qrCode"
-              accept=".jpg,.jpeg,.png"
-              onChange={handleFileChange}
-              ref={fileInputRef}
-              style={{ display: "none" }}
-              required
-            />
-            <button
-              type="button"
-              className="attach-qr-btn"
-              onClick={handleButtonClick}
-            >
-              Chọn File
-            </button>
+            <FaMoneyBillWave className="currency-icon" />
+          </div>
+          {errors.goal && (
+            <div className="error-message">
+              <FaExclamationCircle className="error-icon" />
+              {errors.goal}
+            </div>
+          )}
+          <div className="input-hint">
+            <FaInfoCircle className="hint-icon" />
+            Đặt mục tiêu gây quỹ thực tế bằng VND
           </div>
         </div>
 
         <div className="form-group">
-          <label htmlFor="refundPolicy">Chính Sách Hoàn Tiền (Nếu Có)</label>
-          <textarea
-            id="refundPolicy"
-            name="refundPolicy"
-            value={formData.refundPolicy}
-            onChange={handleChange}
-            placeholder="Mô tả chính sách hoàn tiền nếu dự án không đạt mục tiêu..."
-          />
+          <label htmlFor="category">Danh Mục</label>
+          <select
+            id="category"
+            name="category"
+            value={formData.category}
+            onChange={handleInputChange}
+          >
+            <option value="education">Giáo dục</option>
+            <option value="healthcare">Y tế</option>
+            <option value="environment">Môi trường</option>
+            <option value="poverty">Xóa đói giảm nghèo</option>
+            <option value="disaster">Cứu trợ thiên tai</option>
+            <option value="children">Trẻ em</option>
+            <option value="elderly">Người cao tuổi</option>
+            <option value="other">Khác</option>
+          </select>
+          <div className="input-hint">
+            <FaInfoCircle className="hint-icon" />
+            Chọn danh mục phù hợp nhất với dự án của bạn
+          </div>
         </div>
 
-        {/* Cam kết & Minh bạch */}
-        <h2>Cam Kết & Minh Bạch</h2>
         <div className="form-group">
-          <label htmlFor="commitment">Cam Kết Sử Dụng Quỹ Đúng Mục Đích</label>
-          <textarea
-            id="commitment"
-            name="commitment"
-            value={formData.commitment}
-            onChange={handleChange}
-            placeholder="Lời cam kết về việc sử dụng quỹ"
-            required
+          <label htmlFor="imageUrl">URL Hình Ảnh Dự Án</label>
+          <input
+            type="text"
+            id="imageUrl"
+            name="imageUrl"
+            value={formData.imageUrl}
+            onChange={handleInputChange}
+            className={errors.imageUrl ? 'error-input' : ''}
+            placeholder="Nhập URL hình ảnh"
           />
+          {errors.imageUrl && (
+            <div className="error-message">
+              <FaExclamationCircle className="error-icon" />
+              {errors.imageUrl}
+            </div>
+          )}
+          <div className="input-hint">
+            <FaInfoCircle className="hint-icon" />
+            Cung cấp URL cho hình ảnh chính của dự án
+          </div>
         </div>
 
-        <button type="submit" className="submit-btn">
-          Gửi Yêu Cầu Tạo Dự Án
+        <button 
+          type="submit" 
+          className="submit-btn"
+          disabled={isSubmitting || !paypalConnected}
+        >
+          {isSubmitting ? (
+            <>
+              <FaSpinner className="spinner" />
+              Đang tạo dự án...
+            </>
+          ) : (
+            <>
+              <FaCheckCircle className="submit-icon" />
+              Tạo Dự Án
+            </>
+          )}
         </button>
       </form>
-
-      {submitStatus && <p className="submit-status">{submitStatus}</p>}
     </div>
   );
 };
 
-export default CreatePage;
+export default Create;
