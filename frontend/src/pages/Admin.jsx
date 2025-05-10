@@ -7,7 +7,7 @@ import './Admin.css';
 const TABS = [
   { key: 'dashboard', label: 'Dashboard' },
   { key: 'users', label: 'Users' },
-  { key: 'projects', label: 'Projects' },
+  { key: 'charity-needs', label: 'Charity Needs' },
   { key: 'donations', label: 'Donations' },
   { key: 'notifications', label: 'Notifications' },
   { key: 'logs', label: 'Activity Logs' },
@@ -18,44 +18,65 @@ const Admin = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [stats, setStats] = useState({
-    totalProjects: 0,
+    totalCharityNeeds: 0,
     totalUsers: 0,
-    totalDonations: 0,
-    recentProjects: []
+    totalContributions: 0,
+    recentCharityNeeds: []
   });
   const [users, setUsers] = useState([]);
-  const [projects, setProjects] = useState([]);
+  const [charityNeeds, setCharityNeeds] = useState([]);
   const [donations, setDonations] = useState([]);
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userSearch, setUserSearch] = useState('');
-  const [projectSearch, setProjectSearch] = useState('');
-  const [projectStatusFilter, setProjectStatusFilter] = useState('all');
+  const [charityNeedSearch, setCharityNeedSearch] = useState('');
+  const [charityNeedStatusFilter, setCharityNeedStatusFilter] = useState('all');
   const [notification, setNotification] = useState('');
   const [notificationTarget, setNotificationTarget] = useState('all');
 
   useEffect(() => {
     if (!user || user.role !== 'admin') {
+      console.log('User not admin:', user);
       navigate('/');
       return;
     }
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [statsRes, usersRes, projectsRes, donationsRes, logsRes] = await Promise.all([
-          api.get('/admin/stats'),
-          api.get('/admin/users'),
-          api.get('/admin/projects'),
-          api.get('/admin/donations'),
-          api.get('/admin/logs'),
-        ]);
+        console.log('Current user:', user);
+        console.log('Token:', localStorage.getItem('token'));
+        console.log('Fetching admin data...');
+        
+        // Fetch stats
+        const statsRes = await api.get('/admin/stats');
+        console.log('Stats response:', statsRes.data);
         setStats(statsRes.data);
+
+        // Fetch users
+        const usersRes = await api.get('/admin/users');
+        console.log('Users response:', usersRes.data);
         setUsers(usersRes.data);
-        setProjects(projectsRes.data);
+
+        // Fetch charity needs
+        const charityNeedsRes = await api.get('/admin/charity-needs');
+        console.log('Charity needs response:', charityNeedsRes.data);
+        setCharityNeeds(charityNeedsRes.data);
+
+        // Fetch donations
+        const donationsRes = await api.get('/admin/donations');
+        console.log('Donations response:', donationsRes.data);
         setDonations(donationsRes.data);
+
+        // Fetch logs
+        const logsRes = await api.get('/admin/logs');
+        console.log('Logs response:', logsRes.data);
         setLogs(logsRes.data);
       } catch (error) {
-        console.error('Error fetching admin data:', error);
+        console.error('Error fetching admin data:', error.response || error);
+        if (error.response) {
+          console.error('Error status:', error.response.status);
+          console.error('Error data:', error.response.data);
+        }
       } finally {
         setLoading(false);
       }
@@ -68,55 +89,59 @@ const Admin = () => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
         await api.delete(`/admin/users/${userId}`);
-        setUsers(users.filter(user => user._id !== userId));
+        setUsers(users.filter(user => user.id !== userId));
       } catch (error) {
         console.error('Error deleting user:', error);
       }
     }
   };
+
   const handleToggleRole = async (userId, currentRole) => {
     try {
       const newRole = currentRole === 'admin' ? 'user' : 'admin';
       await api.patch(`/admin/users/${userId}/role`, { role: newRole });
-      setUsers(users.map(u => u._id === userId ? { ...u, role: newRole } : u));
+      setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
     } catch (error) {
       console.error('Error changing role:', error);
     }
   };
+
   const handleToggleLock = async (userId, isLocked) => {
     try {
-      await api.patch(`/admin/users/${userId}/lock`, { locked: !isLocked });
-      setUsers(users.map(u => u._id === userId ? { ...u, locked: !isLocked } : u));
+      await api.patch(`/admin/users/${userId}/lock`, { isLocked: !isLocked });
+      setUsers(users.map(u => u.id === userId ? { ...u, isLocked: !isLocked } : u));
     } catch (error) {
       console.error('Error locking/unlocking user:', error);
     }
   };
 
-  // --- PROJECTS ---
-  const handleDeleteProject = async (projectId) => {
-    if (window.confirm('Are you sure you want to delete this project?')) {
+  // --- CHARITY NEEDS ---
+  const handleDeleteCharityNeed = async (needId) => {
+    if (window.confirm('Are you sure you want to delete this charity need?')) {
       try {
-        await api.delete(`/admin/projects/${projectId}`);
-        setProjects(projects.filter(project => project._id !== projectId));
+        await api.delete(`/admin/charity-needs/${needId}`);
+        setCharityNeeds(charityNeeds.filter(need => need.id !== needId));
       } catch (error) {
-        console.error('Error deleting project:', error);
+        console.error('Error deleting charity need:', error);
       }
     }
   };
-  const handleApproveProject = async (projectId) => {
+
+  const handleApproveCharityNeed = async (needId) => {
     try {
-      await api.patch(`/admin/projects/${projectId}/approve`);
-      setProjects(projects.map(p => p._id === projectId ? { ...p, status: 'active' } : p));
+      await api.patch(`/admin/charity-needs/${needId}/approve`);
+      setCharityNeeds(charityNeeds.map(n => n.id === needId ? { ...n, status: 'active' } : n));
     } catch (error) {
-      console.error('Error approving project:', error);
+      console.error('Error approving charity need:', error);
     }
   };
-  const handleRejectProject = async (projectId) => {
+
+  const handleRejectCharityNeed = async (needId) => {
     try {
-      await api.patch(`/admin/projects/${projectId}/reject`);
-      setProjects(projects.map(p => p._id === projectId ? { ...p, status: 'rejected' } : p));
+      await api.patch(`/admin/charity-needs/${needId}/reject`);
+      setCharityNeeds(charityNeeds.map(n => n.id === needId ? { ...n, status: 'rejected' } : n));
     } catch (error) {
-      console.error('Error rejecting project:', error);
+      console.error('Error rejecting charity need:', error);
     }
   };
 
@@ -126,7 +151,8 @@ const Admin = () => {
     if (!notification) return;
     try {
       await api.post('/admin/notifications', {
-        message: notification,
+        title: 'Admin Notification',
+        content: notification,
         target: notificationTarget,
       });
       setNotification('');
@@ -141,10 +167,11 @@ const Admin = () => {
     u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
     u.email.toLowerCase().includes(userSearch.toLowerCase())
   );
-  const filteredProjects = projects.filter(p =>
-    (projectStatusFilter === 'all' || p.status === projectStatusFilter) &&
-    (p.title.toLowerCase().includes(projectSearch.toLowerCase()) ||
-      p.creator.name.toLowerCase().includes(projectSearch.toLowerCase()))
+
+  const filteredCharityNeeds = charityNeeds.filter(n =>
+    (charityNeedStatusFilter === 'all' || n.status === charityNeedStatusFilter) &&
+    (n.title.toLowerCase().includes(charityNeedSearch.toLowerCase()) ||
+      n.creator.name.toLowerCase().includes(charityNeedSearch.toLowerCase()))
   );
 
   // --- RENDER ---
@@ -152,32 +179,32 @@ const Admin = () => {
     <div className="admin-dashboard">
       <div className="stats-container">
         <div className="stat-card">
-          <h3>Total Projects</h3>
-          <p className="stat-number">{stats.totalProjects}</p>
+          <h3>Total Charity Needs</h3>
+          <p className="stat-number">{stats.totalCharityNeeds}</p>
         </div>
         <div className="stat-card">
           <h3>Total Users</h3>
           <p className="stat-number">{stats.totalUsers}</p>
         </div>
         <div className="stat-card">
-          <h3>Total Donations</h3>
-          <p className="stat-number">{stats.totalDonations}</p>
+          <h3>Total Contributions</h3>
+          <p className="stat-number">{stats.totalContributions}</p>
         </div>
       </div>
-      <div className="recent-projects">
-        <h2>Recent Projects</h2>
-        {stats.recentProjects.length > 0 ? (
-          <div className="projects-list">
-            {stats.recentProjects.map(project => (
-              <div key={project._id} className="project-item">
-                <h4>{project.title}</h4>
-                <p>Created by: {project.creator.name}</p>
-                <p>Status: {project.status}</p>
+      <div className="recent-charity-needs">
+        <h2>Recent Charity Needs</h2>
+        {stats.recentCharityNeeds.length > 0 ? (
+          <div className="charity-needs-list">
+            {stats.recentCharityNeeds.map(need => (
+              <div key={need.id} className="charity-need-item">
+                <h4>{need.title}</h4>
+                <p>Created by: {need.creator.name}</p>
+                <p>Status: {need.status}</p>
               </div>
             ))}
           </div>
         ) : (
-          <p>No recent projects</p>
+          <p>No recent charity needs</p>
         )}
       </div>
     </div>
@@ -185,201 +212,168 @@ const Admin = () => {
 
   const renderUsers = () => (
     <div className="admin-users">
-      <h2>User Management</h2>
+      <h2>Quản lý người dùng</h2>
       <input
         type="text"
-        placeholder="Search by name or email..."
+        placeholder="Tìm kiếm theo tên hoặc email..."
         value={userSearch}
-        onChange={e => setUserSearch(e.target.value)}
-        style={{marginBottom: 16, padding: 8, borderRadius: 6, border: '1px solid #ddd', width: 260}}
+        onChange={(e) => setUserSearch(e.target.value)}
+        className="search-input"
       />
-      {filteredUsers.length > 0 ? (
-        <div className="users-table-container">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Joined</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredUsers.map(user => (
-                <tr key={user._id}>
-                  <td>{user.name}</td>
-                  <td>{user.email}</td>
-                  <td>
-                    <span className={`role-badge ${user.role === 'admin' ? 'admin-badge' : 'user-badge'}`}>{user.role}</span>
-                  </td>
-                  <td>
-                    {user.locked ? <span className="status-badge cancelled">Locked</span> : <span className="status-badge active">Active</span>}
-                  </td>
-                  <td>{new Date(user.createdAt).toLocaleDateString()}</td>
-                  <td>
-                    <button className="action-btn" onClick={() => handleToggleRole(user._id, user.role)}>{user.role === 'admin' ? 'Set User' : 'Set Admin'}</button>
-                    <button className="action-btn" onClick={() => handleToggleLock(user._id, user.locked)}>{user.locked ? 'Unlock' : 'Lock'}</button>
-                    <button className="action-btn delete-btn" onClick={() => handleDeleteUser(user._id)}>Delete</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <p>No users found</p>
-      )}
+      <div className="users-list">
+        {filteredUsers.map(user => (
+          <div key={user.id} className="user-item">
+            <div className="user-info">
+              <h4>{user.name}</h4>
+              <p>{user.email}</p>
+              <span className={`role-badge ${user.role}`}>
+                {user.role === 'admin' ? 'Quản trị viên' : 'Người dùng'}
+              </span>
+              <span className={`status-badge ${user.isLocked ? 'locked' : 'active'}`}>
+                {user.isLocked ? 'Đã khóa' : 'Đang hoạt động'}
+              </span>
+            </div>
+            <div className="user-actions">
+              <button onClick={() => handleToggleRole(user.id, user.role)}>
+                {user.role === 'admin' ? 'Chuyển thành User' : 'Chuyển thành Admin'}
+              </button>
+              <button onClick={() => handleToggleLock(user.id, user.isLocked)}>
+                {user.isLocked ? 'Mở khóa' : 'Khóa tài khoản'}
+              </button>
+              <button onClick={() => handleDeleteUser(user.id)} className="delete-btn">
+                Xóa
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 
-  const renderProjects = () => (
-    <div className="admin-projects">
-      <h2>Project Management</h2>
-      <div style={{display:'flex',gap:12,marginBottom:16,flexWrap:'wrap'}}>
+  const renderCharityNeeds = () => (
+    <div className="admin-charity-needs">
+      <h2>Quản lý nhu cầu từ thiện</h2>
+      <div className="filters">
         <input
           type="text"
-          placeholder="Search by title or creator..."
-          value={projectSearch}
-          onChange={e => setProjectSearch(e.target.value)}
-          style={{padding:8,borderRadius:6,border:'1px solid #ddd',width:220}}
+          placeholder="Tìm kiếm theo tiêu đề hoặc người tạo..."
+          value={charityNeedSearch}
+          onChange={(e) => setCharityNeedSearch(e.target.value)}
+          className="search-input"
         />
-        <select value={projectStatusFilter} onChange={e=>setProjectStatusFilter(e.target.value)} style={{padding:8,borderRadius:6,border:'1px solid #ddd'}}>
-          <option value="all">All Status</option>
-          <option value="active">Active</option>
-          <option value="pending">Pending</option>
-          <option value="completed">Completed</option>
-          <option value="rejected">Rejected</option>
+        <select
+          value={charityNeedStatusFilter}
+          onChange={(e) => setCharityNeedStatusFilter(e.target.value)}
+          className="status-filter"
+        >
+          <option value="all">Tất cả trạng thái</option>
+          <option value="pending">Đang chờ duyệt</option>
+          <option value="active">Đang hoạt động</option>
+          <option value="rejected">Đã từ chối</option>
         </select>
       </div>
-      {filteredProjects.length > 0 ? (
-        <div className="projects-table-container">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Creator</th>
-                <th>Status</th>
-                <th>Created</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredProjects.map(project => (
-                <tr key={project._id}>
-                  <td>{project.title}</td>
-                  <td>{project.creator.name}</td>
-                  <td><span className={`status-badge ${project.status.toLowerCase()}`}>{project.status}</span></td>
-                  <td>{new Date(project.createdAt).toLocaleDateString()}</td>
-                  <td>
-                    {project.status === 'pending' && <button className="action-btn" onClick={()=>handleApproveProject(project._id)}>Approve</button>}
-                    {project.status === 'pending' && <button className="action-btn" onClick={()=>handleRejectProject(project._id)}>Reject</button>}
-                    <button className="action-btn delete-btn" onClick={()=>handleDeleteProject(project._id)}>Delete</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <p>No projects found</p>
-      )}
+      <div className="charity-needs-list">
+        {filteredCharityNeeds.map(need => (
+          <div key={need.id} className="charity-need-item">
+            <div className="charity-need-info">
+              <h4>{need.title}</h4>
+              <p>Người tạo: {need.creator.name}</p>
+              <span className={`status-badge ${need.status}`}>
+                {need.status === 'pending' ? 'Đang chờ duyệt' :
+                 need.status === 'active' ? 'Đang hoạt động' : 'Đã từ chối'}
+              </span>
+              <p className="description">{need.description}</p>
+            </div>
+            <div className="charity-need-actions">
+              {need.status === 'pending' && (
+                <>
+                  <button onClick={() => handleApproveCharityNeed(need.id)} className="approve-btn">
+                    Duyệt
+                  </button>
+                  <button onClick={() => handleRejectCharityNeed(need.id)} className="reject-btn">
+                    Từ chối
+                  </button>
+                </>
+              )}
+              <button onClick={() => handleDeleteCharityNeed(need.id)} className="delete-btn">
+                Xóa
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 
   const renderDonations = () => (
     <div className="admin-donations">
-      <h2>Donations History</h2>
-      {donations.length > 0 ? (
-        <div className="donations-table-container">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>User</th>
-                <th>Project</th>
-                <th>Amount</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {donations.map(d => (
-                <tr key={d._id}>
-                  <td>{d.user?.name || 'N/A'}</td>
-                  <td>{d.project?.title || 'N/A'}</td>
-                  <td>{d.amount.toLocaleString()} đ</td>
-                  <td>{new Date(d.createdAt).toLocaleDateString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <p>No donations found</p>
-      )}
+      <h2>Donations Management</h2>
+      <div className="donations-list">
+        {donations.map(donation => (
+          <div key={donation.id} className="donation-item">
+            <div className="donation-info">
+              <h4>Donation #{donation.id}</h4>
+              <p>Donor: {donation.user.name}</p>
+              <p>Charity Need: {donation.need.title}</p>
+              <p>Amount: ${donation.amount}</p>
+              <p>Status: {donation.status}</p>
+              <p>Date: {new Date(donation.created_at).toLocaleDateString()}</p>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 
   const renderNotifications = () => (
     <div className="admin-notifications">
       <h2>Send Notification</h2>
-      <form onSubmit={handleSendNotification} style={{marginBottom:24}}>
-        <textarea
-          value={notification}
-          onChange={e=>setNotification(e.target.value)}
-          placeholder="Enter notification message..."
-          rows={3}
-          style={{width:'100%',padding:10,borderRadius:8,border:'1px solid #ddd',marginBottom:8}}
-        />
-        <div style={{display:'flex',gap:12,alignItems:'center',marginBottom:8}}>
+      <form onSubmit={handleSendNotification}>
+        <div className="form-group">
+          <label>Message:</label>
+          <textarea
+            value={notification}
+            onChange={(e) => setNotification(e.target.value)}
+            placeholder="Enter notification message..."
+            required
+          />
+        </div>
+        <div className="form-group">
           <label>Target:</label>
-          <select value={notificationTarget} onChange={e=>setNotificationTarget(e.target.value)} style={{padding:8,borderRadius:6,border:'1px solid #ddd'}}>
+          <select
+            value={notificationTarget}
+            onChange={(e) => setNotificationTarget(e.target.value)}
+          >
             <option value="all">All Users</option>
-            <option value="admin">Admins</option>
-            <option value="user">Users</option>
+            <option value="donors">Donors Only</option>
+            <option value="recipients">Recipients Only</option>
           </select>
         </div>
-        <button className="action-btn" type="submit">Send Notification</button>
+        <button type="submit">Send Notification</button>
       </form>
-      {/* Có thể hiển thị danh sách thông báo đã gửi ở đây nếu muốn */}
     </div>
   );
 
   const renderLogs = () => (
     <div className="admin-logs">
       <h2>Activity Logs</h2>
-      {logs.length > 0 ? (
-        <div className="logs-table-container">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>User</th>
-                <th>Action</th>
-                <th>Detail</th>
-              </tr>
-            </thead>
-            <tbody>
-              {logs.map(log => (
-                <tr key={log._id}>
-                  <td>{new Date(log.createdAt).toLocaleString()}</td>
-                  <td>{log.user?.name || 'System'}</td>
-                  <td>{log.action}</td>
-                  <td>{log.detail}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <p>No logs found</p>
-      )}
+      <div className="logs-list">
+        {logs.map(log => (
+          <div key={log.id} className="log-item">
+            <div className="log-info">
+              <p>Action: {log.action}</p>
+              <p>User: {log.evaluator.name}</p>
+              <p>Date: {new Date(log.created_at).toLocaleDateString()}</p>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/');
   };
 
   return (
@@ -411,7 +405,7 @@ const Admin = () => {
             <>
               {activeTab === 'dashboard' && renderDashboard()}
               {activeTab === 'users' && renderUsers()}
-              {activeTab === 'projects' && renderProjects()}
+              {activeTab === 'charity-needs' && renderCharityNeeds()}
               {activeTab === 'donations' && renderDonations()}
               {activeTab === 'notifications' && renderNotifications()}
               {activeTab === 'logs' && renderLogs()}

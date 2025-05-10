@@ -1,7 +1,13 @@
-# dependencies
+dependencies
 backend/node_modules
 frontend/node_modules
 backend/.env
-docker-compose.override.yml
 backend/package-lock.json
 frontend/package-lock.json
+package-lock.json
+package.json
+truffle-config.js
+build
+contracts
+migrations
+node_modules

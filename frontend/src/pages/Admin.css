@@ -324,4 +324,310 @@
   .stats-container { flex-direction: column; }
   .projects-list { grid-template-columns: 1fr; }
   .admin-table { display: block; overflow-x: auto; }
+}
+
+/* Users Management Styles */
+.admin-users {
+  background: #fff;
+  border-radius: 14px;
+  padding: 28px 24px;
+  box-shadow: 0 6px 24px rgba(44,62,80,0.07);
+}
+
+.admin-users h2 {
+  margin: 0 0 24px 0;
+  font-size: 1.3rem;
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  margin-bottom: 24px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52,152,219,0.1);
+}
+
+.users-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.user-item {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+  border-left: 4px solid #3498db;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 10px rgba(44,62,80,0.04);
+}
+
+.user-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(44,62,80,0.10);
+}
+
+.user-info {
+  margin-bottom: 16px;
+}
+
+.user-info h4 {
+  margin: 0 0 8px 0;
+  font-size: 1.1rem;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.user-info p {
+  margin: 4px 0;
+  font-size: 0.95rem;
+  color: #7f8c8d;
+}
+
+.user-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.user-actions button {
+  flex: 1;
+  min-width: 100px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.user-actions button:first-child {
+  background: linear-gradient(90deg, #3498db 0%, #6dd5fa 100%);
+  color: white;
+}
+
+.user-actions button:first-child:hover {
+  background: linear-gradient(90deg, #2980b9 0%, #3498db 100%);
+  box-shadow: 0 2px 8px rgba(52,152,219,0.2);
+}
+
+.user-actions button:nth-child(2) {
+  background: linear-gradient(90deg, #f39c12 0%, #f1c40f 100%);
+  color: white;
+}
+
+.user-actions button:nth-child(2):hover {
+  background: linear-gradient(90deg, #e67e22 0%, #f39c12 100%);
+  box-shadow: 0 2px 8px rgba(243,156,18,0.2);
+}
+
+.user-actions button.delete-btn {
+  background: linear-gradient(90deg, #e74c3c 0%, #ff7675 100%);
+  color: white;
+}
+
+.user-actions button.delete-btn:hover {
+  background: linear-gradient(90deg, #c0392b 0%, #e74c3c 100%);
+  box-shadow: 0 2px 8px rgba(231,76,60,0.2);
+}
+
+/* Role and Status Badges */
+.role-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.role-badge.admin {
+  background: linear-gradient(90deg, #3498db 0%, #6dd5fa 100%);
+  color: white;
+}
+
+.role-badge.user {
+  background: linear-gradient(90deg, #95a5a6 0%, #bdc3c7 100%);
+  color: white;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.status-badge.active {
+  background: linear-gradient(90deg, #2ecc71 0%, #27ae60 100%);
+  color: white;
+}
+
+.status-badge.locked {
+  background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
+  color: white;
+}
+
+/* Charity Needs Management Styles */
+.admin-charity-needs {
+  background: #fff;
+  border-radius: 14px;
+  padding: 28px 24px;
+  box-shadow: 0 6px 24px rgba(44,62,80,0.07);
+}
+
+.admin-charity-needs h2 {
+  margin: 0 0 24px 0;
+  font-size: 1.3rem;
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+.filters {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52,152,219,0.1);
+}
+
+.status-filter {
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  min-width: 200px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.status-filter:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52,152,219,0.1);
+}
+
+.charity-needs-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.charity-need-item {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+  border-left: 4px solid #3498db;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 10px rgba(44,62,80,0.04);
+}
+
+.charity-need-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(44,62,80,0.10);
+}
+
+.charity-need-info {
+  margin-bottom: 16px;
+}
+
+.charity-need-info h4 {
+  margin: 0 0 8px 0;
+  font-size: 1.1rem;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.charity-need-info p {
+  margin: 4px 0;
+  font-size: 0.95rem;
+  color: #7f8c8d;
+}
+
+.charity-need-info .description {
+  margin-top: 12px;
+  padding: 12px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.charity-need-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.charity-need-actions button {
+  flex: 1;
+  min-width: 100px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.approve-btn {
+  background: linear-gradient(90deg, #2ecc71 0%, #27ae60 100%);
+  color: white;
+}
+
+.approve-btn:hover {
+  background: linear-gradient(90deg, #27ae60 0%, #2ecc71 100%);
+  box-shadow: 0 2px 8px rgba(46,204,113,0.2);
+}
+
+.reject-btn {
+  background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
+  color: white;
+}
+
+.reject-btn:hover {
+  background: linear-gradient(90deg, #c0392b 0%, #e74c3c 100%);
+  box-shadow: 0 2px 8px rgba(231,76,60,0.2);
+}
+
+.status-badge.pending {
+  background: linear-gradient(90deg, #f39c12 0%, #e67e22 100%);
+  color: white;
+}
+
+.status-badge.active {
+  background: linear-gradient(90deg, #2ecc71 0%, #27ae60 100%);
+  color: white;
+}
+
+.status-badge.rejected {
+  background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
+  color: white;
 } 

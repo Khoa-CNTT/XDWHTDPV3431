@@ -284,3 +284,37 @@
     height: 40px;
     width: 40px;
   }
+  
+  .form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin: 10px 0;
+    font-size: 0.9rem;
+  }
+  
+  .remember-me {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #666;
+    cursor: pointer;
+  }
+  
+  .remember-me input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+  
+  .forgot-password {
+    color: #3498db;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  
+  .forgot-password:hover {
+    color: #2980b9;
+    text-decoration: underline;
+  }

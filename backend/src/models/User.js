@@ -1,45 +1,53 @@
-const { Sequelize, DataTypes, Op } = require('sequelize');
+const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const User = sequelize.define('User', {
+class User extends Model {}
+
+User.init({
   id: {
     type: DataTypes.INTEGER,
-    autoIncrement: true,
     primaryKey: true,
+    autoIncrement: true
   },
   email: {
-    type: DataTypes.STRING(255),
+    type: DataTypes.STRING,
     allowNull: false,
-    unique: true,
-    validate: {
-      isEmail: true
-    }
+    unique: true
   },
   name: {
-    type: DataTypes.STRING(255),
+    type: DataTypes.STRING,
     allowNull: false
   },
   password: {
-    type: DataTypes.STRING(255),
-    allowNull: false,
+    type: DataTypes.STRING,
+    allowNull: false
   },
   role: {
-    type: DataTypes.ENUM('user', 'admin', 'charity'),
-    defaultValue: 'user',
+    type: DataTypes.ENUM('user', 'admin'),
+    defaultValue: 'user'
+  },
+  reset_token: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  reset_token_expires: {
+    type: DataTypes.DATE,
+    allowNull: true
   },
   created_at: {
     type: DataTypes.DATE,
-    defaultValue: Sequelize.NOW
+    defaultValue: DataTypes.NOW
   },
   updated_at: {
     type: DataTypes.DATE,
-    defaultValue: Sequelize.NOW
+    defaultValue: DataTypes.NOW
   }
 }, {
+  sequelize,
+  modelName: 'User',
   tableName: 'users',
   timestamps: true,
-  createdAt: 'created_at',
-  updatedAt: 'updated_at'
+  underscored: true
 });
 
-module.exports = { User, Op };
+module.exports = User;

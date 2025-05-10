@@ -1,6 +1,5 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const User = require('./user');
 
 const AdminLog = sequelize.define('AdminLog', {
   id: {
@@ -12,7 +11,7 @@ const AdminLog = sequelize.define('AdminLog', {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: User,
+      model: 'users',
       key: 'id',
     },
   },
@@ -31,12 +30,10 @@ const AdminLog = sequelize.define('AdminLog', {
   created_at: {
     type: DataTypes.DATE,
     defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
-  },
+  }
 }, {
   tableName: 'admin_logs',
-  timestamps: false,
+  timestamps: false
 });
 
-AdminLog.belongsTo(User, { foreignKey: 'admin_id', as: 'admin' });
-
-module.exports = AdminLog;
+module.exports = { AdminLog };

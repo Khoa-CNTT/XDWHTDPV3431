@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authService } from "../services/authService";
+import "./Login.css";
 
 const SignUpForm = () => {
   const navigate = useNavigate();
@@ -47,12 +48,12 @@ const SignUpForm = () => {
     try {
       const { confirmPassword, ...registerData } = formData;
       await authService.register(registerData);
-      setSuccess("Registration successful! Redirecting to login...");
+      setSuccess("Đăng ký thành công! Đang chuyển hướng đến trang đăng nhập...");
       setTimeout(() => {
         navigate("/login");
       }, 2000);
     } catch (err) {
-      setError(err.response?.data?.error || "Registration failed. Please try again.");
+      setError(err.response?.data?.error || "Đăng ký thất bại. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }
@@ -61,13 +62,13 @@ const SignUpForm = () => {
   return (
     <div className="form-container sign-up-container">
       <form onSubmit={handleSubmit}>
-        <h1>Create Account</h1>
+        <h1>Tạo tài khoản</h1>
         {error && <div className="error-message">{error}</div>}
         {success && <div className="success-message">{success}</div>}
         <input
           type="text"
           name="name"
-          placeholder="Name"
+          placeholder="Họ và tên"
           value={formData.name}
           onChange={handleChange}
           required
@@ -83,7 +84,7 @@ const SignUpForm = () => {
         <input
           type="password"
           name="password"
-          placeholder="Password"
+          placeholder="Mật khẩu"
           value={formData.password}
           onChange={handleChange}
           required
@@ -91,13 +92,13 @@ const SignUpForm = () => {
         <input
           type="password"
           name="confirmPassword"
-          placeholder="Confirm Password"
+          placeholder="Xác nhận mật khẩu"
           value={formData.confirmPassword}
           onChange={handleChange}
           required
         />
         <button type="submit" disabled={loading}>
-          {loading ? "Signing up..." : "Sign Up"}
+          {loading ? "Đang đăng ký..." : "Đăng ký"}
         </button>
       </form>
     </div>

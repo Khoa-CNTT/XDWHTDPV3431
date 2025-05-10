@@ -14,6 +14,7 @@ const AuthPage = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState('');
   const navigate = useNavigate();
   const { login, register } = useAuth();
 
@@ -51,7 +52,11 @@ const AuthPage = () => {
       } else {
         await register(formData);
         setError('');
-        setIsLogin(true);
+        setSuccess('Registration successful! Redirecting to login...');
+        setTimeout(() => {
+          setIsLogin(true);
+          setFormData(prev => ({ ...prev, password: '' }));
+        }, 2000);
       }
     } catch (err) {
       setError(err.response?.data?.error || 'An error occurred');

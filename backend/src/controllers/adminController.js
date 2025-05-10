@@ -1,75 +1,118 @@
-const { User, Project, Donation, Notification, Log } = require('../models');
+const { User, Contribution, CharityNeed, Evaluation } = require('../models');
 
-// Thống kê tổng quan
-exports.getStats = async (req, res) => {
+// Get admin dashboard stats
+const getStats = async (req, res) => {
   const totalUsers = await User.count();
-  const totalProjects = await Project.count();
-  const totalDonations = await Donation.sum('amount');
-  const recentProjects = await Project.findAll({ order: [['createdAt', 'DESC']], limit: 5, include: [{ model: User, as: 'creator' }] });
-  res.json({ totalUsers, totalProjects, totalDonations, recentProjects });
+  const totalContributions = await Contribution.count();
+  const totalCharityNeeds = await CharityNeed.count();
+  const recentCharityNeeds = await CharityNeed.findAll({ 
+    order: [['created_at', 'DESC']], 
+    limit: 5, 
+    include: [{ model: User, as: 'creator' }] 
+  });
+  res.json({ totalUsers, totalContributions, totalCharityNeeds, recentCharityNeeds });
 };
 
-// Quản lý user
-exports.getUsers = async (req, res) => {
-  const users = await User.findAll();
+// Get all users
+const getUsers = async (req, res) => {
+  const users = await User.findAll({ attributes: { exclude: ['password'] } });
   res.json(users);
 };
-exports.changeUserRole = async (req, res) => {
+
+// Change user role
+const changeUserRole = async (req, res) => {
   const { id } = req.params;
   const { role } = req.body;
   await User.update({ role }, { where: { id } });
-  res.json({ success: true });
+  res.json({ message: 'User role updated successfully' });
 };
-exports.lockUser = async (req, res) => {
+
+// Lock/Unlock user
+const lockUser = async (req, res) => {
   const { id } = req.params;
-  const { locked } = req.body;
-  await User.update({ locked }, { where: { id } });
-  res.json({ success: true });
+  const { isLocked } = req.body;
+  await User.update({ isLocked }, { where: { id } });
+  res.json({ message: 'User status updated successfully' });
 };
-exports.deleteUser = async (req, res) => {
+
+// Delete user
+const deleteUser = async (req, res) => {
   const { id } = req.params;
   await User.destroy({ where: { id } });
-  res.json({ success: true });
+  res.json({ message: 'User deleted successfully' });
 };
 
-// Quản lý dự án
-exports.getProjects = async (req, res) => {
-  const projects = await Project.findAll({ include: [{ model: User, as: 'creator' }] });
-  res.json(projects);
+// Get all charity needs
+const getCharityNeeds = async (req, res) => {
+  const charityNeeds = await CharityNeed.findAll({ 
+    include: [{ model: User, as: 'creator' }] 
+  });
+  res.json(charityNeeds);
 };
-exports.approveProject = async (req, res) => {
+
+// Approve charity need
+const approveCharityNeed = async (req, res) => {
   const { id } = req.params;
-  await Project.update({ status: 'active' }, { where: { id } });
-  res.json({ success: true });
+  await CharityNeed.update({ status: 'active' }, { where: { id } });
+  res.json({ message: 'Charity need approved successfully' });
 };
-exports.rejectProject = async (req, res) => {
+
+// Reject charity need
+const rejectCharityNeed = async (req, res) => {
   const { id } = req.params;
-  await Project.update({ status: 'rejected' }, { where: { id } });
-  res.json({ success: true });
+  await CharityNeed.update({ status: 'rejected' }, { where: { id } });
+  res.json({ message: 'Charity need rejected successfully' });
 };
-exports.deleteProject = async (req, res) => {
+
+// Delete charity need
+const deleteCharityNeed = async (req, res) => {
   const { id } = req.params;
-  await Project.destroy({ where: { id } });
-  res.json({ success: true });
+  await CharityNeed.destroy({ where: { id } });
+  res.json({ message: 'Charity need deleted successfully' });
 };
 
-// Lịch sử quyên góp
-exports.getDonations = async (req, res) => {
-  const donations = await Donation.findAll({ include: [{ model: User }, { model: Project }] });
-  res.json(donations);
+// Get all contributions
+const getDonations = async (req, res) => {
+  const contributions = await Contribution.findAll({
+    include: [
+      { model: User, as: 'user' },
+      { model: CharityNeed, as: 'need' }
+    ]
+  });
+  res.json(contributions);
 };
 
-// Gửi thông báo
-exports.sendNotification = async (req, res) => {
-  const { message, target } = req.body;
-  await Notification.create({ message, target });
-  res.json({ success: true });
+// Send notification
+const sendNotification = async (req, res) => {
+  const { title, content, target } = req.body;
+  // TODO: Implement notification system
+  res.json({ message: 'Notification sent successfully' });
 };
 
-// Nhật ký hoạt động
-exports.getLogs = async (req, res) => {
-  const logs = await Log.findAll({ order: [['createdAt', 'DESC']], limit: 100, include: [{ model: User }] });
-  res.json(logs);
+// Get admin logs
+const getLogs = async (req, res) => {
+  const evaluations = await Evaluation.findAll({
+    order: [['created_at', 'DESC']],
+    include: [{ 
+      model: User, 
+      as: 'evaluator',
+      foreignKey: 'evaluator_id'
+    }]
+  });
+  res.json(evaluations);
 };
 
-module.exports = { getStats, getUsers, changeUserRole, lockUser, deleteUser, getProjects, approveProject, rejectProject, deleteProject, getDonations, sendNotification, getLogs };
+module.exports = {
+  getStats,
+  getUsers,
+  changeUserRole,
+  lockUser,
+  deleteUser,
+  getCharityNeeds,
+  approveCharityNeed,
+  rejectCharityNeed,
+  deleteCharityNeed,
+  getDonations,
+  sendNotification,
+  getLogs
+};

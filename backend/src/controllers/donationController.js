@@ -17,7 +17,7 @@ const getAllDonations = async (req, res, next) => {
 
     const filters = {};
     if (user_id) filters.user_id = user_id;
-    if (need_id) filters.charity_need_id = need_id;
+    if (need_id) filters.need_id = need_id;
 
     const offset = (page - 1) * limit;
     const donations = await donationRepository.getAll({ ...filters, limit, offset });
@@ -54,76 +54,48 @@ const getDonationById = async (req, res, next) => {
 
 const createDonation = async (req, res, next) => {
   try {
-    const { user_id, need_id, amount, currency = 'USD' } = req.body;
+    const { need_id, amount } = req.body;
+    const user_id = req.user.id;
 
-    // Check if user exists
-    const user = await userRepository.findById(user_id);
-    if (!user) {
-      const err = new Error('User not found');
-      err.status = 404;
+    if (!need_id || !amount) {
+      const err = new Error('Missing required fields: need_id, amount');
+      err.status = 400;
       throw err;
     }
 
-    // Check if charity need exists
-    const charityNeed = await charityNeedRepository.findById(need_id);
-    if (!charityNeed) {
+    const need = await charityNeedRepository.getById(need_id);
+    if (!need) {
       const err = new Error('Charity need not found');
       err.status = 404;
       throw err;
     }
 
-    // Check if user is authorized
-    if (req.user && req.user.id !== user_id) {
-      const err = new Error('Unauthorized: You can only donate on behalf of yourself');
-      err.status = 403;
+    const donation = await donationRepository.create({
+      user_id,
+      need_id,
+      amount,
+      status: 'pending'
+    });
+
+    res.status(201).json(donation);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const updateDonationStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!['pending', 'confirmed', 'rejected'].includes(status)) {
+      const err = new Error('Invalid status');
+      err.status = 400;
       throw err;
     }
 
-    // Create donation record
-    const donation = await donationRepository.create({
-      user_id,
-      charity_need_id: need_id,
-      amount,
-      status: 'pending',
-    });
-
-    // Create PayPal payment
-    const payment = {
-      intent: 'sale',
-      payer: { payment_method: 'paypal' },
-      redirect_urls: {
-        return_url: `${process.env.BACKEND_URL}/api/donation/success`,
-        cancel_url: `${process.env.BACKEND_URL}/api/donation/cancel`,
-      },
-      transactions: [
-        {
-          amount: {
-            total: amount.toFixed(2),
-            currency,
-          },
-          description: `Donation for charity need #${need_id}`,
-        },
-      ],
-    };
-
-    paypal.payment.create(payment, async (error, payment) => {
-      if (error) {
-        console.error('PayPal Error:', error);
-        const err = new Error('Failed to create PayPal payment');
-        err.status = 500;
-        return next(err);
-      }
-
-      // Update donation with PayPal payment ID
-      await donationRepository.update(donation.id, { paypal_payment_id: payment.id });
-
-      const approvalUrl = payment.links.find(link => link.rel === 'approval_url').href;
-      res.status(201).json({
-        message: 'Donation created, please complete payment',
-        donation_id: donation.id,
-        approval_url: approvalUrl,
-      });
-    });
+    const donation = await donationRepository.update(id, { status });
+    res.json(donation);
   } catch (err) {
     next(err);
   }
@@ -169,9 +141,9 @@ const handlePaymentSuccess = async (req, res, next) => {
       await donationRepository.update(donation.id, { status: 'completed' });
 
       // Update charity need current amount
-      const charityNeed = await charityNeedRepository.findById(donation.charity_need_id);
+      const charityNeed = await charityNeedRepository.findById(donation.need_id);
       const newCurrentAmount = (parseFloat(charityNeed.current_amount) + parseFloat(donation.amount)).toFixed(2);
-      await charityNeedRepository.update(donation.charity_need_id, { current_amount: newCurrentAmount });
+      await charityNeedRepository.update(donation.need_id, { current_amount: newCurrentAmount });
 
       res.redirect(`${process.env.FRONTEND_URL}/donation/success`);
     });
@@ -210,6 +182,7 @@ module.exports = {
   getAllDonations,
   getDonationById,
   createDonation,
+  updateDonationStatus,
   handlePaymentSuccess,
   handlePaymentCancel
 };

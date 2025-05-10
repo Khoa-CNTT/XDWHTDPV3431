@@ -1,20 +1,26 @@
 import React, { useState } from 'react';
 import { FaPaypal, FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaSpinner, FaMoneyBillWave } from 'react-icons/fa';
+import { charityNeedService } from '../services/charityNeedService';
 import './Create.css';
 
 const Create = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    goal: '',
-    category: 'education',
-    imageUrl: '',
+    organization_name: '',
+    location: '',
+    target_group: '',
+    items_needed: '',
+    image: '',
+    funding_goal: '',
+    blockchain_link: '',
+    project_link: '',
+    fund_avatar: ''
   });
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [paypalConnected, setPaypalConnected] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -42,20 +48,36 @@ const Create = () => {
 
     if (!formData.description.trim()) {
       newErrors.description = 'Vui lòng nhập mô tả dự án';
-    } else if (formData.description.length < 50) {
-      newErrors.description = 'Mô tả dự án phải có ít nhất 50 ký tự';
+    } else if (formData.description.length < 20) {
+      newErrors.description = 'Mô tả dự án phải có ít nhất 20 ký tự';
     }
 
-    if (!formData.goal.trim()) {
-      newErrors.goal = 'Vui lòng nhập mục tiêu gây quỹ';
-    } else if (isNaN(formData.goal) || parseFloat(formData.goal) <= 0) {
-      newErrors.goal = 'Vui lòng nhập số tiền hợp lệ';
+    if (!formData.organization_name.trim()) {
+      newErrors.organization_name = 'Vui lòng nhập tên tổ chức';
     }
 
-    if (!formData.imageUrl.trim()) {
-      newErrors.imageUrl = 'Vui lòng nhập URL hình ảnh';
-    } else if (!isValidUrl(formData.imageUrl)) {
-      newErrors.imageUrl = 'Vui lòng nhập URL hợp lệ';
+    if (!formData.location.trim()) {
+      newErrors.location = 'Vui lòng nhập địa điểm';
+    }
+
+    if (!formData.target_group.trim()) {
+      newErrors.target_group = 'Vui lòng nhập đối tượng hưởng lợi';
+    }
+
+    if (!formData.items_needed.trim()) {
+      newErrors.items_needed = 'Vui lòng nhập nhu yếu phẩm cần thiết';
+    }
+
+    if (!formData.funding_goal.trim()) {
+      newErrors.funding_goal = 'Vui lòng nhập mục tiêu gây quỹ';
+    } else if (isNaN(formData.funding_goal) || parseFloat(formData.funding_goal) <= 0) {
+      newErrors.funding_goal = 'Vui lòng nhập số tiền hợp lệ';
+    }
+
+    if (!formData.image.trim()) {
+      newErrors.image = 'Vui lòng nhập URL hình ảnh';
+    } else if (!isValidUrl(formData.image)) {
+      newErrors.image = 'Vui lòng nhập URL hợp lệ';
     }
 
     setErrors(newErrors);
@@ -71,17 +93,6 @@ const Create = () => {
     }
   };
 
-  const connectPaypal = async () => {
-    try {
-      // Simulate PayPal connection
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setPaypalConnected(true);
-    } catch (error) {
-      console.error('Lỗi kết nối PayPal:', error);
-      alert('Không thể kết nối với PayPal. Vui lòng thử lại.');
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -89,30 +100,34 @@ const Create = () => {
       return;
     }
 
-    if (!paypalConnected) {
-      alert('Vui lòng kết nối tài khoản PayPal trước');
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
-      // Simulate PayPal transaction
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const response = await charityNeedService.createNeed({
+        ...formData,
+        raised_amount: 0,
+        raised_percent: 0,
+        is_interested: false
+      });
       
-      // Here you would typically interact with PayPal API
-      console.log('Form submitted:', formData);
+      console.log('Dự án đã được tạo:', response);
       
       setIsSuccess(true);
       setFormData({
         title: '',
         description: '',
-        goal: '',
-        category: 'education',
-        imageUrl: '',
+        organization_name: '',
+        location: '',
+        target_group: '',
+        items_needed: '',
+        image: '',
+        funding_goal: '',
+        blockchain_link: '',
+        project_link: '',
+        fund_avatar: ''
       });
     } catch (error) {
-      console.error('Lỗi khi gửi form:', error);
+      console.error('Lỗi khi tạo dự án:', error);
       alert('Không thể tạo dự án. Vui lòng thử lại.');
     } finally {
       setIsSubmitting(false);
@@ -130,7 +145,7 @@ const Create = () => {
           <div className="success-message">
             <FaCheckCircle className="success-icon" />
             <h2>Dự án đã được tạo thành công!</h2>
-            <p>Dự án của bạn đã được tạo và sẵn sàng nhận quyên góp thông qua PayPal.</p>
+            <p>Dự án của bạn đã được tạo và sẵn sàng nhận quyên góp.</p>
             <button className="back-button" onClick={handleBack}>
               Tạo Dự Án Khác
             </button>
@@ -143,22 +158,10 @@ const Create = () => {
   return (
     <div className="create-project-container">
       <div className="create-header">
-        <FaPaypal className="header-icon" />
-        <h2>Tạo Dự Án Mới</h2>
+        <h2>Tạo Dự Án Từ Thiện Mới</h2>
         <p className="header-subtitle">
-          Bắt đầu dự án từ thiện của bạn và nhận quyên góp thông qua PayPal. Kết nối tài khoản PayPal và điền thông tin bên dưới.
+          Điền thông tin chi tiết về dự án từ thiện của bạn
         </p>
-      </div>
-
-      <div className="paypal-section">
-        <button 
-          className="connect-paypal-btn"
-          onClick={connectPaypal}
-          disabled={paypalConnected}
-        >
-          <FaPaypal className="paypal-icon" />
-          {paypalConnected ? 'Đã kết nối PayPal' : 'Kết nối PayPal'}
-        </button>
       </div>
 
       <form className="create-form" onSubmit={handleSubmit}>
@@ -171,7 +174,7 @@ const Create = () => {
             value={formData.title}
             onChange={handleInputChange}
             className={errors.title ? 'error-input' : ''}
-            placeholder="Nhập tên dự án của bạn"
+            placeholder="Nhập tên dự án"
           />
           {errors.title && (
             <div className="error-message">
@@ -179,10 +182,6 @@ const Create = () => {
               {errors.title}
             </div>
           )}
-          <div className="input-hint">
-            <FaInfoCircle className="hint-icon" />
-            Chọn một tên rõ ràng và mô tả cho dự án của bạn
-          </div>
         </div>
 
         <div className="form-group">
@@ -193,7 +192,8 @@ const Create = () => {
             value={formData.description}
             onChange={handleInputChange}
             className={errors.description ? 'error-input' : ''}
-            placeholder="Mô tả chi tiết về dự án của bạn"
+            placeholder="Nhập mô tả chi tiết về dự án"
+            rows="4"
           />
           {errors.description && (
             <div className="error-message">
@@ -201,101 +201,165 @@ const Create = () => {
               {errors.description}
             </div>
           )}
-          <div className="input-hint">
-            <FaInfoCircle className="hint-icon" />
-            Cung cấp mô tả chi tiết về mục tiêu và tác động của dự án
-          </div>
         </div>
 
         <div className="form-group">
-          <label htmlFor="goal">Mục Tiêu Gây Quỹ (VND)</label>
-          <div className="currency-input-container">
-            <input
-              type="number"
-              id="goal"
-              name="goal"
-              value={formData.goal}
-              onChange={handleInputChange}
-              className={errors.goal ? 'error-input' : ''}
-              placeholder="Nhập số tiền bằng VND"
-              step="1000"
-              min="0"
-            />
-            <FaMoneyBillWave className="currency-icon" />
-          </div>
-          {errors.goal && (
-            <div className="error-message">
-              <FaExclamationCircle className="error-icon" />
-              {errors.goal}
-            </div>
-          )}
-          <div className="input-hint">
-            <FaInfoCircle className="hint-icon" />
-            Đặt mục tiêu gây quỹ thực tế bằng VND
-          </div>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="category">Danh Mục</label>
-          <select
-            id="category"
-            name="category"
-            value={formData.category}
-            onChange={handleInputChange}
-          >
-            <option value="education">Giáo dục</option>
-            <option value="healthcare">Y tế</option>
-            <option value="environment">Môi trường</option>
-            <option value="poverty">Xóa đói giảm nghèo</option>
-            <option value="disaster">Cứu trợ thiên tai</option>
-            <option value="children">Trẻ em</option>
-            <option value="elderly">Người cao tuổi</option>
-            <option value="other">Khác</option>
-          </select>
-          <div className="input-hint">
-            <FaInfoCircle className="hint-icon" />
-            Chọn danh mục phù hợp nhất với dự án của bạn
-          </div>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="imageUrl">URL Hình Ảnh Dự Án</label>
+          <label htmlFor="organization_name">Tên Tổ Chức</label>
           <input
             type="text"
-            id="imageUrl"
-            name="imageUrl"
-            value={formData.imageUrl}
+            id="organization_name"
+            name="organization_name"
+            value={formData.organization_name}
             onChange={handleInputChange}
-            className={errors.imageUrl ? 'error-input' : ''}
-            placeholder="Nhập URL hình ảnh"
+            className={errors.organization_name ? 'error-input' : ''}
+            placeholder="Nhập tên tổ chức"
           />
-          {errors.imageUrl && (
+          {errors.organization_name && (
             <div className="error-message">
               <FaExclamationCircle className="error-icon" />
-              {errors.imageUrl}
+              {errors.organization_name}
             </div>
           )}
-          <div className="input-hint">
-            <FaInfoCircle className="hint-icon" />
-            Cung cấp URL cho hình ảnh chính của dự án
-          </div>
         </div>
 
-        <button 
-          type="submit" 
-          className="submit-btn"
-          disabled={isSubmitting || !paypalConnected}
-        >
+        <div className="form-group">
+          <label htmlFor="location">Địa Điểm</label>
+          <input
+            type="text"
+            id="location"
+            name="location"
+            value={formData.location}
+            onChange={handleInputChange}
+            className={errors.location ? 'error-input' : ''}
+            placeholder="Nhập địa điểm"
+          />
+          {errors.location && (
+            <div className="error-message">
+              <FaExclamationCircle className="error-icon" />
+              {errors.location}
+            </div>
+          )}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="target_group">Đối Tượng Hưởng Lợi</label>
+          <input
+            type="text"
+            id="target_group"
+            name="target_group"
+            value={formData.target_group}
+            onChange={handleInputChange}
+            className={errors.target_group ? 'error-input' : ''}
+            placeholder="Nhập đối tượng hưởng lợi"
+          />
+          {errors.target_group && (
+            <div className="error-message">
+              <FaExclamationCircle className="error-icon" />
+              {errors.target_group}
+            </div>
+          )}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="items_needed">Nhu Yếu Phẩm Cần Thiết</label>
+          <textarea
+            id="items_needed"
+            name="items_needed"
+            value={formData.items_needed}
+            onChange={handleInputChange}
+            className={errors.items_needed ? 'error-input' : ''}
+            placeholder="Nhập nhu yếu phẩm cần thiết"
+          />
+          {errors.items_needed && (
+            <div className="error-message">
+              <FaExclamationCircle className="error-icon" />
+              {errors.items_needed}
+            </div>
+          )}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="image">URL Hình Ảnh</label>
+          <input
+            type="text"
+            id="image"
+            name="image"
+            value={formData.image}
+            onChange={handleInputChange}
+            className={errors.image ? 'error-input' : ''}
+            placeholder="Nhập URL hình ảnh"
+          />
+          {errors.image && (
+            <div className="error-message">
+              <FaExclamationCircle className="error-icon" />
+              {errors.image}
+            </div>
+          )}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="funding_goal">Mục Tiêu Gây Quỹ</label>
+          <input
+            type="number"
+            id="funding_goal"
+            name="funding_goal"
+            value={formData.funding_goal}
+            onChange={handleInputChange}
+            className={errors.funding_goal ? 'error-input' : ''}
+            placeholder="Nhập mục tiêu gây quỹ"
+          />
+          {errors.funding_goal && (
+            <div className="error-message">
+              <FaExclamationCircle className="error-icon" />
+              {errors.funding_goal}
+            </div>
+          )}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="blockchain_link">Link Blockchain</label>
+          <input
+            type="text"
+            id="blockchain_link"
+            name="blockchain_link"
+            value={formData.blockchain_link}
+            onChange={handleInputChange}
+            placeholder="Nhập link blockchain (không bắt buộc)"
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="project_link">Link Dự Án</label>
+          <input
+            type="text"
+            id="project_link"
+            name="project_link"
+            value={formData.project_link}
+            onChange={handleInputChange}
+            placeholder="Nhập link dự án (không bắt buộc)"
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="fund_avatar">Avatar Quỹ</label>
+          <input
+            type="text"
+            id="fund_avatar"
+            name="fund_avatar"
+            value={formData.fund_avatar}
+            onChange={handleInputChange}
+            placeholder="Nhập URL avatar quỹ (không bắt buộc)"
+          />
+        </div>
+
+        <button type="submit" className="submit-button" disabled={isSubmitting}>
           {isSubmitting ? (
             <>
               <FaSpinner className="spinner" />
-              Đang tạo dự án...
+              Đang tạo...
             </>
           ) : (
-            <>
-              <FaCheckCircle className="submit-icon" />
-              Tạo Dự Án
-            </>
+            'Tạo Dự Án'
           )}
         </button>
       </form>

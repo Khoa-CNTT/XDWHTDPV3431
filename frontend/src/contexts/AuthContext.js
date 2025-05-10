@@ -17,6 +17,7 @@ export const AuthProvider = ({ children }) => {
     const response = await authService.login(credentials);
     setUser(response.user);
     localStorage.setItem('user', JSON.stringify(response.user));
+    localStorage.setItem('token', response.token);
     return response;
   };
 

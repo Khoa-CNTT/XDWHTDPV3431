@@ -15,10 +15,32 @@ const count = async (filters) => {
   return await CharityNeed.count({ where: filters });
 };
 
-const create = async ({ title, description, created_by }) => {
+const create = async ({ 
+  title, 
+  description,
+  organization_name,
+  location,
+  target_group,
+  items_needed,
+  funding_goal,
+  image,
+  blockchain_link,
+  project_link,
+  fund_avatar,
+  created_by 
+}) => {
   return await CharityNeed.create({
     title,
     description,
+    organization_name,
+    location,
+    target_group,
+    items_needed,
+    funding_goal,
+    image,
+    blockchain_link,
+    project_link,
+    fund_avatar,
     created_by,
   });
 };

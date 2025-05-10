@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const userRepository = require('../repositories/userRepository');
+const { sendResetPasswordEmail } = require('../services/emailService');
 
 const register = async (req, res, next) => {
   try {
@@ -106,7 +107,109 @@ const login = async (req, res, next) => {
   }
 };
 
+const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({
+        error: 'Email is required'
+      });
+    }
+
+    console.log('Processing forgot password request for email:', email);
+
+    const user = await userRepository.findByEmail(email);
+    if (!user) {
+      console.log('User not found for email:', email);
+      return res.status(404).json({
+        error: 'Email không tồn tại trong hệ thống'
+      });
+    }
+
+    console.log('Found user:', user.id);
+
+    // Tạo token reset password
+    const resetToken = jwt.sign(
+      { id: user.id },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    console.log('Generated reset token');
+
+    // Lưu token vào database
+    await userRepository.updateResetToken(user.id, resetToken);
+
+    console.log('Updated reset token in database');
+
+    // Gửi email với link reset password
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+    await sendResetPasswordEmail(email, resetLink);
+
+    res.json({
+      message: 'Vui lòng kiểm tra email của bạn để đặt lại mật khẩu'
+    });
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    if (err.name === 'SequelizeValidationError') {
+      return res.status(400).json({
+        error: 'Dữ liệu không hợp lệ'
+      });
+    }
+    if (err.name === 'SequelizeUniqueConstraintError') {
+      return res.status(400).json({
+        error: 'Email đã tồn tại'
+      });
+    }
+    res.status(500).json({
+      error: 'Có lỗi xảy ra, vui lòng thử lại sau'
+    });
+  }
+};
+
+const resetPassword = async (req, res, next) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) {
+      return res.status(400).json({
+        error: 'Token and new password are required'
+      });
+    }
+
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await userRepository.findById(decoded.id);
+
+    if (!user) {
+      return res.status(404).json({
+        error: 'User not found'
+      });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password and clear reset token
+    await userRepository.updatePassword(user.id, hashedPassword);
+    await userRepository.clearResetToken(user.id);
+
+    res.json({
+      message: 'Mật khẩu đã được đặt lại thành công'
+    });
+  } catch (err) {
+    if (err.name === 'JsonWebTokenError') {
+      return res.status(400).json({
+        error: 'Token không hợp lệ hoặc đã hết hạn'
+      });
+    }
+    console.error('Reset password error:', err);
+    next(err);
+  }
+};
+
 module.exports = {
   register,
-  login
+  login,
+  forgotPassword,
+  resetPassword
 };

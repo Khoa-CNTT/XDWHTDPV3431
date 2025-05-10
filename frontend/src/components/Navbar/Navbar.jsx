@@ -9,7 +9,10 @@ import { useAuth } from "../../contexts/AuthContext";
 const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const menuRef = useRef();
+  const navigate = useNavigate();
+
   // State phụ để force update khi user thay đổi
   const [_, setForce] = useState(0);
   useEffect(() => {
@@ -37,7 +40,13 @@ const Navbar = () => {
     navigate("/login");
   };
 
-  const navigate = useNavigate();
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+      setSearchQuery("");
+    }
+  };
 
   return (
     <div className="navbar">
@@ -55,13 +64,25 @@ const Navbar = () => {
         <Link to="/create">Tạo dự án</Link>
         <Link to="/donate">Quyên góp</Link>
         <Link to="/guide">Hướng dẫn</Link>
+        <Link to="/transparency">Minh bạch</Link>
       </div>
 
       {/* User & Search Buttons */}
       <div className="user-actions">
-        <div className="search-icon">
-          <FontAwesomeIcon icon={faSearch} />
-        </div>
+        <form className="search-form" onSubmit={handleSearch}>
+          <div className="search-container">
+            <input
+              type="text"
+              placeholder="Tìm kiếm..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+            />
+            <button type="submit" className="search-icon">
+              <FontAwesomeIcon icon={faSearch} />
+            </button>
+          </div>
+        </form>
         <div
           className="auth-button"
           onClick={() => {

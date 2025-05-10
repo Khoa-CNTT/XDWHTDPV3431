@@ -8,35 +8,60 @@ const SignInForm = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    rememberMe: false
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
   const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: type === 'checkbox' ? checked : value,
     });
+    if (error) setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await login(formData);
+      if (formData.rememberMe) {
+        localStorage.setItem('rememberedEmail', formData.email);
+      } else {
+        localStorage.removeItem('rememberedEmail');
+      }
       setSuccess("Đăng nhập thành công! Đang chuyển hướng...");
       setError("");
       setSubmitted(true);
     } catch (err) {
-      setError(err.response?.data?.error || "Login failed");
+      if (err.response?.data?.error) {
+        setError(err.response.data.error);
+      } else if (err.message === 'Network Error') {
+        setError("Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet của bạn.");
+      } else if (err.response?.status === 401) {
+        setError("Email hoặc mật khẩu không chính xác. Vui lòng thử lại.");
+      } else {
+        setError("Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại sau.");
+      }
       setSuccess("");
     }
   };
 
-  // Chuyển hướng khi user đã có giá trị và đã submit form
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem('rememberedEmail');
+    if (rememberedEmail) {
+      setFormData(prev => ({
+        ...prev,
+        email: rememberedEmail,
+        rememberMe: true
+      }));
+    }
+  }, []);
+
   useEffect(() => {
     if (user && submitted) {
-      // Kiểm tra vai trò người dùng và chuyển hướng phù hợp
       if (user.role === 'admin') {
         navigate("/admin");
       } else {
@@ -48,9 +73,9 @@ const SignInForm = () => {
   return (
     <div className="form-container sign-in-container">
       <form onSubmit={handleSubmit}>
-        <h1>Sign In</h1>
+        <h1>Đăng nhập</h1>
         {error && <div className="error-message">{error}</div>}
-        {success && <div className="success-message" style={{color:'#16a34a',marginBottom:8}}>{success}</div>}
+        {success && <div className="success-message">{success}</div>}
         <input
           type="email"
           name="email"
@@ -62,12 +87,26 @@ const SignInForm = () => {
         <input
           type="password"
           name="password"
-          placeholder="Password"
+          placeholder="Mật khẩu"
           value={formData.password}
           onChange={handleChange}
           required
         />
-        <button type="submit">Sign In</button>
+        <div className="form-options">
+          <label className="remember-me">
+            <input
+              type="checkbox"
+              name="rememberMe"
+              checked={formData.rememberMe}
+              onChange={handleChange}
+            />
+            Nhớ tôi
+          </label>
+          <a href="/forgot-password" className="forgot-password">
+            Quên mật khẩu?
+          </a>
+        </div>
+        <button type="submit">Đăng nhập</button>
       </form>
     </div>
   );

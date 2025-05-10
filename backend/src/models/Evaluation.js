@@ -1,38 +1,55 @@
-const { DataTypes } = require('sequelize');
+const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const Evaluation = sequelize.define('Evaluation', {
-  need_id: {
+class Evaluation extends Model {}
+
+Evaluation.init({
+  id: {
     type: DataTypes.INTEGER,
-    references: {
-      model: 'charity_needs',
-      key: 'id',
-    },
+    primaryKey: true,
+    autoIncrement: true
   },
-  evaluator_id: {
+  rating: {
     type: DataTypes.INTEGER,
-    references: {
-      model: 'users',
-      key: 'id',
-    },
-  },
-  comment: {
-    type: DataTypes.TEXT,
-  },
-  score: {
-    type: DataTypes.INTEGER,
+    allowNull: false,
     validate: {
       min: 1,
-      max: 10,
-    },
+      max: 5
+    }
+  },
+  comment: {
+    type: DataTypes.TEXT
+  },
+  user_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id'
+    }
+  },
+  need_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'charity_needs',
+      key: 'id'
+    }
   },
   created_at: {
     type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
+    defaultValue: DataTypes.NOW
   },
+  updated_at: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
+  }
 }, {
+  sequelize,
+  modelName: 'Evaluation',
   tableName: 'evaluations',
-  timestamps: false,
+  timestamps: true,
+  underscored: true
 });
 
-module.exports = { Evaluation };
+module.exports = Evaluation;

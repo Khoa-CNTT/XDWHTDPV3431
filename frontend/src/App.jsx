@@ -11,9 +11,12 @@ import DonateForm from "./pages/Donate";
 import ProjectDetails from "./components/ProjectDetails/ProjectDetails";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
+import ForgotPassword from "./pages/ForgotPassword";
 import LayoutClient from "./components/layout";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
+import Transparency from "./pages/Transparency";
+import ResetPassword from './pages/ResetPassword';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -53,6 +56,7 @@ function App() {
             <Route path="/projects" element={<Projects />} />
             <Route path="/guide" element={<Guide />} />
             <Route path="/projects/:projectId" element={<ProjectDetails />} />
+            <Route path="/transparency" element={<Transparency />} />
             
             {/* Protected Routes */}
             <Route path="/create" element={
@@ -82,6 +86,8 @@ function App() {
           {/* Public Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

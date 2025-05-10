@@ -1,4 +1,4 @@
-const { Contribution, CharityNeed } = require('../models');
+const { Contribution, CharityNeed, User } = require('../models');
 
 class DonationRepository {
   async create(donationData) {
@@ -17,7 +17,10 @@ class DonationRepository {
 
   async getDonationById(id) {
     return await Contribution.findByPk(id, {
-      include: [{ model: CharityNeed, as: 'charity_need' }],
+      include: [
+        { model: User, as: 'user' },
+        { model: CharityNeed, as: 'need' }
+      ],
     });
   }
 
@@ -26,8 +29,11 @@ class DonationRepository {
       where: filters,
       limit,
       offset,
-      include: [{ model: CharityNeed, as: 'charity_need' }],
-      order: [['createdAt', 'DESC']],
+      include: [
+        { model: User, as: 'user' },
+        { model: CharityNeed, as: 'need' }
+      ],
+      order: [['created_at', 'DESC']],
     });
   }
 

@@ -1,4 +1,5 @@
 const { User, Contribution, CharityNeed, TransparencyReport, Feedback, Op } = require('../models');
+const db = require('../config/database');
 
 class UserRepository {
   // Lấy tất cả user (hỗ trợ phân trang và lọc)
@@ -17,7 +18,7 @@ class UserRepository {
   }
 
   // Lấy user theo ID
-  async getById(userId) {
+  async findById(userId) {
     if (!userId || isNaN(userId)) {
       const err = new Error('Invalid user ID');
       err.status = 400;
@@ -177,6 +178,39 @@ class UserRepository {
     return await Feedback.create({
       user_id,
       content
+    });
+  }
+
+  // Reset password methods
+  async updateResetToken(userId, resetToken) {
+    const user = await User.findByPk(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    await user.update({
+      reset_token: resetToken,
+      reset_token_expires: new Date(Date.now() + 3600000) // 1 hour from now
+    });
+  }
+
+  async clearResetToken(userId) {
+    const user = await User.findByPk(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    await user.update({
+      reset_token: null,
+      reset_token_expires: null
+    });
+  }
+
+  async updatePassword(userId, hashedPassword) {
+    const user = await User.findByPk(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    await user.update({
+      password: hashedPassword
     });
   }
 }

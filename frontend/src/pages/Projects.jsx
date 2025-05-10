@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { db, collection, getDocs } from "../firebase"; // Import Firestore
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./Projects.css";
 
 const ProjectsPage = () => {
@@ -10,18 +10,31 @@ const ProjectsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Lấy dữ liệu từ Firestore
+  // Lấy dữ liệu từ API
   useEffect(() => {
     const fetchProjects = async () => {
       setLoading(true);
       setError(null);
       try {
-        const querySnapshot = await getDocs(collection(db, "projects"));
-        const projectsData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
+        const response = await axios.get('http://localhost:5000/api/charity-needs');
+        // Map dữ liệu từ API sang định dạng hiển thị
+        const formattedData = response.data.map(item => ({
+          id: item.id,
+          title: item.title,
+          organizationName: item.organization_name,
+          location: item.location,
+          targetGroup: item.target_group,
+          itemsNeeded: item.items_needed,
+          image: item.image,
+          raisedAmount: item.raised_amount,
+          fundingGoal: item.funding_goal,
+          raisedPercent: item.raised_percent,
+          blockchainLink: item.blockchain_link,
+          projectLink: item.project_link,
+          fundAvatar: item.fund_avatar,
+          isInterested: item.is_interested
         }));
-        setProjectList(projectsData);
+        setProjectList(formattedData);
       } catch (error) {
         console.error("Lỗi khi tải dữ liệu dự án:", error);
         setError("Không thể tải dữ liệu dự án. Vui lòng thử lại sau.");
@@ -33,14 +46,22 @@ const ProjectsPage = () => {
     fetchProjects();
   }, []);
 
-  const handleInterestToggle = (projectId) => {
-    setProjectList((prevList) =>
-      prevList.map((project) =>
-        project.id === projectId
-          ? { ...project, isInterested: !project.isInterested }
-          : project
-      )
-    );
+  const handleInterestToggle = async (projectId) => {
+    try {
+      // Gọi API để cập nhật trạng thái quan tâm
+      await axios.patch(`http://localhost:5000/api/charity-needs/${projectId}/toggle-interest`);
+      
+      // Cập nhật state local
+      setProjectList((prevList) =>
+        prevList.map((project) =>
+          project.id === projectId
+            ? { ...project, isInterested: !project.isInterested }
+            : project
+        )
+      );
+    } catch (error) {
+      console.error("Lỗi khi cập nhật trạng thái quan tâm:", error);
+    }
   };
 
   const toggleQrCode = (projectLink) => {
@@ -81,14 +102,14 @@ const ProjectsPage = () => {
   if (projectList.length === 0) {
     return (
       <div className="projects-page">
-        <h1>Dự án đang gây quỹ</h1>
+        <h1>Chương trình từ thiện</h1>
         <div className="no-projects">
-          <p>Hiện chưa có dự án nào đang gây quỹ.</p>
+          <p>Hiện chưa có chương trình từ thiện nào đang hoạt động.</p>
           <button 
             className="create-project-button"
             onClick={() => navigate('/create')}
           >
-            Tạo dự án mới
+            Tạo chương trình mới
           </button>
         </div>
       </div>
@@ -97,8 +118,8 @@ const ProjectsPage = () => {
 
   return (
     <div className="projects-page">
-      <h1>Dự án đang gây quỹ</h1>
-      <p>Hãy lựa chọn đồng hành cùng dự án mà bạn quan tâm</p>
+      <h1>Chương trình từ thiện</h1>
+      <p>Hãy chọn chương trình từ thiện mà bạn muốn hỗ trợ</p>
       <div className="project-list">
         {projectList.map((project) => (
           <div key={project.id} className="project-item">
@@ -112,8 +133,20 @@ const ProjectsPage = () => {
               }}
             />
 
-            <h3>{project.fundName || "Quỹ từ thiện"}</h3>
+            <h3>{project.organizationName || "Tổ chức từ thiện"}</h3>
             <h2>{project.title}</h2>
+            
+            <div className="project-details">
+              <p className="location">
+                <i className="fas fa-map-marker-alt"></i> {project.location || "Địa điểm"}
+              </p>
+              <p className="target-group">
+                <i className="fas fa-users"></i> {project.targetGroup || "Đối tượng hưởng lợi"}
+              </p>
+              <p className="items-needed">
+                <i className="fas fa-box"></i> {project.itemsNeeded || "Nhu yếu phẩm cần thiết"}
+              </p>
+            </div>
 
             <button
               onClick={() => handleInterestToggle(project.id)}
@@ -130,28 +163,28 @@ const ProjectsPage = () => {
               <div className="progress-bar">
                 <div
                   className="progress-fill"
-                  style={{ width: project.raisedPercent || "0%" }}
+                  style={{ width: `${project.raisedPercent}%` }}
                 />
               </div>
-              <p className="amount">Đã nhận: {project.raisedAmount || "0 ETH"}</p>
-              <p className="target">Mục tiêu: {project.fundingGoal || "0 ETH"}</p>
+              <p className="amount">Đã quyên góp: {project.raisedAmount} ETH</p>
+              <p className="target">Mục tiêu: {project.fundingGoal} ETH</p>
             </div>
 
             <div className="project-actions">
               <div className="action-buttons">
                 <button
-                  onClick={() => navigate(`/projects/${project.id}`)}
+                  onClick={() => navigate(`/charity-needs/${project.id}`)}
                   className="button details-btn"
                 >
                   Xem chi tiết
                 </button>
                 <a 
-                  href={project.statementLink || "#"} 
+                  href={project.blockchainLink || "#"} 
                   className="button fund-btn"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Kiểm tra sao kê
+                  Kiểm tra blockchain
                 </a>
                 <button
                   onClick={() => toggleQrCode(project.projectLink)}

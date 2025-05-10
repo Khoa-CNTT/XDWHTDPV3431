@@ -1,32 +1,51 @@
-const { Sequelize, DataTypes } = require('sequelize');
+const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const Contribution = sequelize.define('Contribution', {
-  id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
-  user_id: {
+class Contribution extends Model {}
+
+Contribution.init({
+  id: {
     type: DataTypes.INTEGER,
-    allowNull: false,
-    references: { model: 'users', key: 'id' },
-  },
-  charity_need_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: { model: 'charity_needs', key: 'id' },
+    primaryKey: true,
+    autoIncrement: true
   },
   amount: {
     type: DataTypes.DECIMAL(10, 2),
+    allowNull: false
+  },
+  message: {
+    type: DataTypes.TEXT
+  },
+  user_id: {
+    type: DataTypes.INTEGER,
     allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id'
+    }
   },
-  paypal_payment_id: {
-    type: DataTypes.STRING(255),
+  need_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'charity_needs',
+      key: 'id'
+    }
   },
-  status: {
-    type: DataTypes.ENUM('pending', 'completed', 'cancelled'),
-    defaultValue: 'pending',
+  created_at: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
   },
+  updated_at: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
+  }
 }, {
+  sequelize,
+  modelName: 'Contribution',
   tableName: 'contributions',
   timestamps: true,
+  underscored: true
 });
 
-module.exports = { Contribution };
+module.exports = Contribution;

@@ -6,9 +6,10 @@
   }
   
   .projects-page h1 {
-    font-size: 2em;
+    font-size: 2.2em;
     margin-bottom: 10px;
-    color: #333;
+    color: #2c3e50;
+    font-weight: 600;
   }
   
   .projects-page p {
@@ -129,7 +130,7 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: 420px; /* Đảm bảo các items có chiều cao đồng đều */
+    min-height: 480px;
   }
   
   .project-item:hover {
@@ -318,5 +319,39 @@
       flex: 1;
       min-width: 120px;
     }
+  }
+  
+  .project-details {
+    margin: 10px 0;
+    text-align: left;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+  }
+  
+  .project-details p {
+    margin: 5px 0;
+    font-size: 0.9em;
+    color: #555;
+    display: flex;
+    align-items: center;
+  }
+  
+  .project-details i {
+    margin-right: 8px;
+    color: #3498db;
+    width: 20px;
+  }
+  
+  .location i {
+    color: #e74c3c;
+  }
+  
+  .target-group i {
+    color: #2ecc71;
+  }
+  
+  .items-needed i {
+    color: #f39c12;
   }
   
