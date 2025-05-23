@@ -5,8 +5,10 @@ const {
   CharityNeed, 
   TransparencyReport, 
   Contribution, 
-  Feedback 
+  Feedback,
+  User
 } = require('../models');
+const { Op } = require('sequelize');
 
 // Authentication functions
 const login = async (req, res, next) => {
@@ -286,6 +288,95 @@ const submitFeedback = async (req, res, next) => {
   }
 };
 
+const getProfile = async (req, res, next) => {
+  try {
+    const user = await User.findByPk(req.user.id, {
+      attributes: ['id', 'email', 'name', 'role', 'wallet_address']
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          message: 'User not found'
+        }
+      });
+    }
+
+    return res.json({
+      success: true,
+      user
+    });
+  } catch (err) {
+    console.error('Error in getProfile:', err);
+    return res.status(500).json({
+      success: false,
+      error: {
+        message: err.message || 'Internal server error'
+      }
+    });
+  }
+};
+
+const updateWalletAddress = async (req, res, next) => {
+  try {
+    console.log('Received wallet update request:', req.body);
+    const { wallet_address } = req.body;
+    const user_id = req.user.id;
+
+    console.log('User ID:', user_id);
+    console.log('Wallet address:', wallet_address);
+
+    // Check if user exists
+    const user = await User.findByPk(user_id);
+    if (!user) {
+      console.log('User not found');
+      return res.status(404).json({
+        success: false,
+        error: {
+          message: 'User not found'
+        }
+      });
+    }
+
+    // Check if wallet address is already in use
+    const existingUser = await User.findOne({ 
+      where: { 
+        wallet_address,
+        id: { [Op.ne]: user_id }
+      }
+    });
+
+    if (existingUser) {
+      console.log('Wallet address already in use');
+      return res.status(409).json({
+        success: false,
+        error: {
+          message: 'This wallet address is already connected to another account'
+        }
+      });
+    }
+
+    // Update wallet address
+    await user.update({ wallet_address });
+    console.log('Wallet address updated successfully');
+    
+    return res.json({
+      success: true,
+      message: 'Wallet address updated successfully',
+      wallet_address
+    });
+  } catch (err) {
+    console.error('Error in updateWalletAddress:', err);
+    return res.status(500).json({
+      success: false,
+      error: {
+        message: err.message || 'Internal server error'
+      }
+    });
+  }
+};
+
 module.exports = {
   login,
   register,
@@ -298,5 +389,7 @@ module.exports = {
   getCharityNeeds,
   contribute,
   trackContribution,
-  submitFeedback
+  submitFeedback,
+  updateWalletAddress,
+  getProfile
 };

@@ -1,20 +1,38 @@
 const Web3 = require('web3');
-const Contract = require('@truffle/contract');
 const path = require('path');
-const CharityContractArtifact = require(path.join(__dirname, '../../../build/contracts/CharityContract.json'));
+const CharityContract = require(path.join(__dirname, '../../../build/contracts/CharityContract.json'));
 
 class BlockchainService {
     constructor() {
-        this.web3 = new Web3(process.env.ETHEREUM_NODE_URL || 'http://localhost:7545');
-        this.contract = Contract(CharityContractArtifact);
-        this.contract.setProvider(this.web3.currentProvider);
+        console.log('BlockchainService constructor called');
+        this.web3 = null;
+        this.contract = null;
+        this.initialized = false;
     }
 
     async initialize() {
         try {
-            this.instance = await this.contract.deployed();
+            // Kết nối đến Ethereum network
+            this.web3 = new Web3(process.env.ETHEREUM_NODE_URL || 'http://localhost:7545');
+            
+            // Sử dụng địa chỉ contract đã triển khai
+            const contractAddress = '0x37Cc5816352050B890E69A5726192fe711D1c200';
+            
+            // Khởi tạo contract instance
+            this.contract = new this.web3.eth.Contract(
+                CharityContract.abi,
+                contractAddress
+            );
+
+            // Thêm account từ private key nếu có
+            if (process.env.ETHEREUM_PRIVATE_KEY) {
+                const account = this.web3.eth.accounts.privateKeyToAccount(process.env.ETHEREUM_PRIVATE_KEY);
+                this.web3.eth.accounts.wallet.add(account);
+                console.log('Added account from private key:', account.address);
+            }
+
+            this.initialized = true;
             console.log('Blockchain service initialized successfully');
-            console.log('Contract address:', this.instance.address);
         } catch (error) {
             console.error('Failed to initialize blockchain service:', error);
             throw error;
@@ -23,12 +41,14 @@ class BlockchainService {
 
     async createNeed(title, description, targetAmount, creatorAddress) {
         try {
-            const result = await this.instance.createNeed(
+            const result = await this.contract.methods.createNeed(
                 title,
                 description,
-                targetAmount,
-                { from: creatorAddress }
-            );
+                targetAmount
+            ).send({ 
+                from: creatorAddress,
+                gas: 3000000 // Add gas limit
+            });
             return result;
         } catch (error) {
             console.error('Error creating need:', error);
@@ -37,11 +57,29 @@ class BlockchainService {
     }
 
     async contribute(needId, amount, contributorAddress) {
+        if (!this.initialized) {
+            throw new Error('Blockchain service not initialized');
+        }
+
         try {
-            const result = await this.instance.contribute(
+            console.log('Making contribution:', {
                 needId,
-                { from: contributorAddress, value: amount }
-            );
+                amount,
+                contributorAddress
+            });
+
+            // Chuyển đổi amount sang Wei
+            const amountInWei = this.web3.utils.toWei(amount.toString(), 'ether');
+
+            // Gọi contract method
+            const result = await this.contract.methods.contribute(needId)
+                .send({
+                    from: contributorAddress,
+                    value: amountInWei,
+                    gas: 3000000 // Add gas limit
+                });
+
+            console.log('Contribution successful:', result);
             return result;
         } catch (error) {
             console.error('Error making contribution:', error);
@@ -49,18 +87,17 @@ class BlockchainService {
         }
     }
 
-    async getNeed(needId) {
+    async getNeedDetails(needId) {
         try {
-            const need = await this.instance.getNeed(needId);
+            const details = await this.contract.methods.getNeedDetails(needId).call();
             return {
-                id: need.id.toString(),
-                title: need.title,
-                description: need.description,
-                targetAmount: need.targetAmount.toString(),
-                currentAmount: need.currentAmount.toString(),
-                creator: need.creator,
-                isActive: need.isActive,
-                createdAt: need.createdAt.toString()
+                title: details[0],
+                description: details[1],
+                creator: details[2],
+                targetAmount: details[3].toString(),
+                raisedAmount: details[4].toString(),
+                isActive: details[5],
+                createdAt: details[6].toString()
             };
         } catch (error) {
             console.error('Error getting need details:', error);
@@ -68,20 +105,40 @@ class BlockchainService {
         }
     }
 
-    async getContributions(needId) {
+    async getNeedCount() {
         try {
-            const contributions = await this.instance.getContributions(needId);
-            return contributions.map(contribution => ({
-                needId: contribution.needId.toString(),
-                contributor: contribution.contributor,
-                amount: contribution.amount.toString(),
-                timestamp: contribution.timestamp.toString()
-            }));
+            return await this.contract.methods.getNeedCount().call();
         } catch (error) {
-            console.error('Error getting contributions:', error);
+            console.error('Error getting need count:', error);
+            throw error;
+        }
+    }
+
+    async getNeedIds() {
+        try {
+            return await this.contract.methods.getNeedIds().call();
+        } catch (error) {
+            console.error('Error getting need IDs:', error);
+            throw error;
+        }
+    }
+
+    async withdrawFunds(needId, creatorAddress) {
+        try {
+            const result = await this.contract.methods.withdrawFunds(
+                needId
+            ).send({ 
+                from: creatorAddress,
+                gas: 3000000 // Add gas limit
+            });
+            return result;
+        } catch (error) {
+            console.error('Error withdrawing funds:', error);
             throw error;
         }
     }
 }
 
-module.exports = new BlockchainService(); 
+// Export một instance của BlockchainService
+const blockchainService = new BlockchainService();
+module.exports = blockchainService; 

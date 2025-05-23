@@ -1,64 +1,51 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const userRepository = require('../repositories/userRepository');
-const { sendResetPasswordEmail } = require('../services/emailService');
+const { sendResetPasswordEmail, generateVerificationToken, sendVerificationEmail, sendVerificationSuccessEmail } = require('../services/emailService');
+const User = require('../models/User');
+const EmailVerification = require('../models/EmailVerification');
+const { Op } = require('sequelize');
 
 const register = async (req, res, next) => {
   try {
-    const { email, password, name, role } = req.body;
+    const { email, password, name } = req.body;
     
-    // Validate required fields
-    if (!email || !password || !name) {
-      return res.status(400).json({
-        error: 'Missing required fields: email, password, name'
-      });
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({
-        error: 'Invalid email format'
-      });
-    }
-
-    // Validate password length
-    if (password.length < 6) {
-      return res.status(400).json({
-        error: 'Password must be at least 6 characters long'
-      });
-    }
-
-    // Check if email already exists
-    const existingUser = await userRepository.findByEmail(email);
+    // Kiểm tra email đã tồn tại
+    const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
-      return res.status(400).json({
-        error: 'Email already exists'
-      });
+      return res.status(400).json({ message: 'Email đã được sử dụng' });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    // Mã hóa mật khẩu
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await userRepository.create({
+    // Tạo token xác thực
+    const verificationToken = generateVerificationToken();
+
+    // Tạo user mới với trạng thái chưa xác thực
+    const user = await User.create({
       email,
       password: hashedPassword,
       name,
-      role: role || 'user',
+      isVerified: false,
+      verificationToken,
+      verificationTokenExpires: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 giờ
     });
 
-    res.status(201).json({ 
-      message: 'User registered successfully',
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role
-      }
+    // Gửi email xác thực
+    const emailSent = await sendVerificationEmail(email, verificationToken);
+    if (!emailSent) {
+      // Nếu gửi email thất bại, xóa user
+      await user.destroy();
+      return res.status(500).json({ message: 'Không thể gửi email xác thực' });
+    }
+
+    res.status(201).json({
+      message: 'Đăng ký thành công. Vui lòng kiểm tra email để xác thực tài khoản.'
     });
-  } catch (err) {
-    console.error('Registration error:', err);
-    next(err);
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ message: 'Lỗi server' });
   }
 };
 
@@ -76,6 +63,10 @@ const login = async (req, res, next) => {
       return res.status(401).json({
         error: 'Invalid email or password'
       });
+    }
+
+    if (user.isLocked) {
+      return res.status(403).json({ error: 'Tài khoản đã bị khóa. Vui lòng liên hệ admin.' });
     }
 
     const isValidPassword = await bcrypt.compare(password, user.password);
@@ -207,9 +198,71 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
+// Đổi mật khẩu cho user đã đăng nhập
+const changePassword = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Thiếu mật khẩu hiện tại hoặc mật khẩu mới' });
+    }
+    // Lấy user đầy đủ (bao gồm password)
+    const user = await userRepository.findByEmail(req.user.email);
+    if (!user) {
+      return res.status(404).json({ error: 'Không tìm thấy người dùng' });
+    }
+    // Kiểm tra mật khẩu hiện tại
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Mật khẩu hiện tại không đúng' });
+    }
+    // Hash mật khẩu mới
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await user.update({ password: hashedPassword });
+    res.json({ message: 'Đổi mật khẩu thành công' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.query;
+
+    // Tìm user với token xác thực
+    const user = await User.findOne({
+      where: {
+        verificationToken: token,
+        verificationTokenExpires: { [Op.gt]: new Date() }
+      }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Token không hợp lệ hoặc đã hết hạn' });
+    }
+
+    // Cập nhật trạng thái xác thực
+    await user.update({
+      isVerified: true,
+      verificationToken: null,
+      verificationTokenExpires: null
+    });
+
+    // Gửi email thông báo xác thực thành công
+    await sendVerificationSuccessEmail(user.email);
+
+    res.json({ message: 'Xác thực email thành công' });
+  } catch (error) {
+    console.error('Email verification error:', error);
+    res.status(500).json({ message: 'Lỗi server' });
+  }
+};
+
 module.exports = {
   register,
   login,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  changePassword,
+  verifyEmail
 };

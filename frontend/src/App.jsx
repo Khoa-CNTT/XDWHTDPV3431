@@ -6,7 +6,6 @@ import AuthPage from "./components/AuthPage/AuthPage";
 import Home from "./pages/Home";
 import Projects from "./pages/Projects";
 import Create from "./pages/Create";
-import Guide from "./pages/Guide/Guide";
 import DonateForm from "./pages/Donate";
 import ProjectDetails from "./components/ProjectDetails/ProjectDetails";
 import Login from "./pages/Login";
@@ -17,15 +16,20 @@ import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import Transparency from "./pages/Transparency";
 import ResetPassword from './pages/ResetPassword';
+import SearchResults from "./pages/SearchResults";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
+  
+  console.log('ProtectedRoute - isAuthenticated:', isAuthenticated);
+  console.log('ProtectedRoute - loading:', loading);
   
   if (loading) {
     return <div>Loading...</div>;
   }
   
   if (!isAuthenticated) {
+    console.log('ProtectedRoute - redirecting to login');
     return <Navigate to="/login" />;
   }
   
@@ -35,11 +39,16 @@ const ProtectedRoute = ({ children }) => {
 const AdminRoute = ({ children }) => {
   const { isAuthenticated, loading, user } = useAuth();
   
+  console.log('AdminRoute - isAuthenticated:', isAuthenticated);
+  console.log('AdminRoute - loading:', loading);
+  console.log('AdminRoute - user:', user);
+  
   if (loading) {
     return <div>Loading...</div>;
   }
   
   if (!isAuthenticated || user?.role !== 'admin') {
+    console.log('AdminRoute - redirecting to home');
     return <Navigate to="/" />;
   }
   
@@ -54,9 +63,9 @@ function App() {
           <Route element={<LayoutClient />}>
             <Route path="/" element={<Home />} />
             <Route path="/projects" element={<Projects />} />
-            <Route path="/guide" element={<Guide />} />
             <Route path="/projects/:projectId" element={<ProjectDetails />} />
             <Route path="/transparency" element={<Transparency />} />
+            <Route path="/search" element={<SearchResults />} />
             
             {/* Protected Routes */}
             <Route path="/create" element={
@@ -65,6 +74,11 @@ function App() {
               </ProtectedRoute>
             } />
             <Route path="/donate" element={
+              <ProtectedRoute>
+                <DonateForm />
+              </ProtectedRoute>
+            } />
+            <Route path="/donate/:projectId" element={
               <ProtectedRoute>
                 <DonateForm />
               </ProtectedRoute>

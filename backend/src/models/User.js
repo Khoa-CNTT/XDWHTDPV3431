@@ -26,6 +26,11 @@ User.init({
     type: DataTypes.ENUM('user', 'admin'),
     defaultValue: 'user'
   },
+  wallet_address: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true
+  },
   reset_token: {
     type: DataTypes.STRING,
     allowNull: true
@@ -41,6 +46,22 @@ User.init({
   updated_at: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW
+  },
+  isVerified: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+  verificationToken: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  verificationTokenExpires: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
+  is_locked: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
   }
 }, {
   sequelize,

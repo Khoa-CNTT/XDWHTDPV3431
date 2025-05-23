@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { authService } from "../services/authService";
 import "./Login.css";
 
-const SignUpForm = () => {
+const SignUpForm = (props) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
@@ -50,7 +50,7 @@ const SignUpForm = () => {
       await authService.register(registerData);
       setSuccess("Đăng ký thành công! Đang chuyển hướng đến trang đăng nhập...");
       setTimeout(() => {
-        navigate("/login");
+        if (props.onSwitchToSignIn) props.onSwitchToSignIn();
       }, 2000);
     } catch (err) {
       setError(err.response?.data?.error || "Đăng ký thất bại. Vui lòng thử lại.");

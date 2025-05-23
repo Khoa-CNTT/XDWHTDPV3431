@@ -14,7 +14,8 @@ Contribution.init({
     allowNull: false
   },
   message: {
-    type: DataTypes.TEXT
+    type: DataTypes.TEXT,
+    allowNull: true
   },
   user_id: {
     type: DataTypes.INTEGER,
@@ -31,6 +32,10 @@ Contribution.init({
       model: 'charity_needs',
       key: 'id'
     }
+  },
+  status: {
+    type: DataTypes.ENUM('pending', 'confirmed', 'rejected'),
+    defaultValue: 'pending'
   },
   created_at: {
     type: DataTypes.DATE,

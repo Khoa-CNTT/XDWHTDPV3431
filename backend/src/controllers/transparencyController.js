@@ -1,4 +1,5 @@
-const { TransparencyReport } = require('../models');
+const TransparencyReport = require('../models/TransparencyReport');
+const User = require('../models/User');
 
 // Lấy tất cả báo cáo minh bạch
 const getAllReports = async (req, res, next) => {
@@ -6,8 +7,8 @@ const getAllReports = async (req, res, next) => {
     const reports = await TransparencyReport.findAll({
       order: [['created_at', 'DESC']],
       include: [{
-        model: 'User',
-        as: 'created_by',
+        model: User,
+        as: 'creator',
         attributes: ['id', 'name', 'email']
       }]
     });
@@ -22,8 +23,8 @@ const getReportById = async (req, res, next) => {
   try {
     const report = await TransparencyReport.findByPk(req.params.id, {
       include: [{
-        model: 'User',
-        as: 'created_by',
+        model: User,
+        as: 'creator',
         attributes: ['id', 'name', 'email']
       }]
     });
@@ -95,10 +96,14 @@ const deleteReport = async (req, res, next) => {
   }
 };
 
-module.exports = {
+const controller = {
   getAllReports,
   getReportById,
   createReport,
   updateReport,
   deleteReport
-}; 
+};
+
+console.log('Exported controller:', controller); // Debug log
+
+module.exports = controller; 

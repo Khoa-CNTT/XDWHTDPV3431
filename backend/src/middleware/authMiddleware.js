@@ -1,40 +1,31 @@
 const jwt = require('jsonwebtoken');
-const userRepository = require('../repositories/userRepository');
+const User = require('../models/User');
 
-const authMiddleware = async (req, res, next) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) {
-      const err = new Error('No token provided');
-      err.status = 401;
-      throw err;
-    }
+const auth = async (req, res, next) => {
+    try {
+        const token = req.header('Authorization')?.replace('Bearer ', '');
+        
+        if (!token) {
+            return res.status(401).json({ message: 'Không tìm thấy token xác thực' });
+        }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await userRepository.findById(decoded.id);
-    
-    if (!user) {
-      const err = new Error('User not found');
-      err.status = 401;
-      throw err;
-    }
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findOne({ where: { id: decoded.id } });
 
-    req.user = user;
-    next();
-  } catch (err) {
-    if (err.name === 'JsonWebTokenError') {
-      err.status = 401;
-      err.message = 'Invalid token';
+        if (!user) {
+            return res.status(401).json({ message: 'Không tìm thấy người dùng' });
+        }
+
+        if (!user.isVerified) {
+            return res.status(403).json({ message: 'Vui lòng xác thực email trước khi đăng nhập' });
+        }
+
+        req.user = user;
+        req.token = token;
+        next();
+    } catch (error) {
+        res.status(401).json({ message: 'Vui lòng đăng nhập' });
     }
-    next(err);
-  }
 };
 
-const authorizeRole = (role) => (req, res, next) => {
-    if (!role.includes(req.user.role)) {
-      return res.status(403).json({ error: `Bạn không có quyền truy cập chức năng này. Vai trò yêu cầu: ${role}` });
-    }
-    next();
-  };
-
-module.exports = { authMiddleware, authorizeRole };
+module.exports = auth; 

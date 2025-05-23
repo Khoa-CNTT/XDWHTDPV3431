@@ -6,9 +6,10 @@ import "./Projects.css";
 const ProjectsPage = () => {
   const navigate = useNavigate();
   const [projectList, setProjectList] = useState([]);
-  const [selectedQr, setSelectedQr] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showAll, setShowAll] = useState(false);
+  const [totalProjects, setTotalProjects] = useState(0);
 
   // Lấy dữ liệu từ API
   useEffect(() => {
@@ -16,25 +17,31 @@ const ProjectsPage = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get('http://localhost:5000/api/charity-needs');
+        const response = await axios.get('http://localhost:5000/api/charity-needs', {
+          params: {
+            page: 1,
+            limit: showAll ? totalProjects : 10
+          }
+        });
+        
         // Map dữ liệu từ API sang định dạng hiển thị
-        const formattedData = response.data.map(item => ({
+        const formattedData = response.data.data.map(item => ({
           id: item.id,
           title: item.title,
           organizationName: item.organization_name,
           location: item.location,
           targetGroup: item.target_group,
           itemsNeeded: item.items_needed,
-          image: item.image,
-          raisedAmount: item.raised_amount,
+          image: item.image || "/placeholder-image.jpg",
+          raisedAmount: item.raised_amount || 0,
           fundingGoal: item.funding_goal,
-          raisedPercent: item.raised_percent,
+          raisedPercent: item.raised_percent || 0,
           blockchainLink: item.blockchain_link,
           projectLink: item.project_link,
-          fundAvatar: item.fund_avatar,
-          isInterested: item.is_interested
+          isInterested: item.is_interested || false
         }));
         setProjectList(formattedData);
+        setTotalProjects(response.data.pagination.total);
       } catch (error) {
         console.error("Lỗi khi tải dữ liệu dự án:", error);
         setError("Không thể tải dữ liệu dự án. Vui lòng thử lại sau.");
@@ -44,7 +51,7 @@ const ProjectsPage = () => {
     };
 
     fetchProjects();
-  }, []);
+  }, [showAll, totalProjects]);
 
   const handleInterestToggle = async (projectId) => {
     try {
@@ -64,8 +71,8 @@ const ProjectsPage = () => {
     }
   };
 
-  const toggleQrCode = (projectLink) => {
-    setSelectedQr(selectedQr === projectLink ? null : projectLink);
+  const handleViewAll = () => {
+    setShowAll(true);
   };
 
   // Hiển thị trạng thái loading
@@ -124,7 +131,7 @@ const ProjectsPage = () => {
         {projectList.map((project) => (
           <div key={project.id} className="project-item">
             <img
-              src={project.image || "/placeholder-image.jpg"}
+              src={project.image}
               alt={project.title}
               className="project-image"
               onError={(e) => {
@@ -133,18 +140,18 @@ const ProjectsPage = () => {
               }}
             />
 
-            <h3>{project.organizationName || "Tổ chức từ thiện"}</h3>
+            <h3>{project.organizationName}</h3>
             <h2>{project.title}</h2>
             
             <div className="project-details">
               <p className="location">
-                <i className="fas fa-map-marker-alt"></i> {project.location || "Địa điểm"}
+                <i className="fas fa-map-marker-alt"></i> {project.location}
               </p>
               <p className="target-group">
-                <i className="fas fa-users"></i> {project.targetGroup || "Đối tượng hưởng lợi"}
+                <i className="fas fa-users"></i> {project.targetGroup}
               </p>
               <p className="items-needed">
-                <i className="fas fa-box"></i> {project.itemsNeeded || "Nhu yếu phẩm cần thiết"}
+                <i className="fas fa-box"></i> {project.itemsNeeded}
               </p>
             </div>
 
@@ -173,46 +180,31 @@ const ProjectsPage = () => {
             <div className="project-actions">
               <div className="action-buttons">
                 <button
-                  onClick={() => navigate(`/charity-needs/${project.id}`)}
+                  onClick={() => navigate(`/projects/${project.id}`)}
                   className="button details-btn"
                 >
                   Xem chi tiết
                 </button>
                 <a 
-                  href={project.blockchainLink || "#"} 
+                  href={project.blockchainLink} 
                   className="button fund-btn"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   Kiểm tra blockchain
                 </a>
-                <button
-                  onClick={() => toggleQrCode(project.projectLink)}
-                  className="button qr-btn"
-                >
-                  {selectedQr === project.projectLink ? "Đóng QR" : "Mở QR"}
-                </button>
               </div>
             </div>
-
-            {selectedQr === project.projectLink && (
-              <div className="qr-code">
-                <img
-                  src={project.fundAvatar || "/placeholder-qr.jpg"}
-                  alt={`QR Code for ${project.title}`}
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = "/placeholder-qr.jpg";
-                  }}
-                />
-              </div>
-            )}
           </div>
         ))}
       </div>
-      <div className="view-all">
-        <button className="button view-all-btn">Xem tất cả</button>
-      </div>
+      {!showAll && totalProjects > 10 && (
+        <div className="view-all">
+          <button className="button view-all-btn" onClick={handleViewAll}>
+            Xem tất cả ({totalProjects} dự án)
+          </button>
+        </div>
+      )}
     </div>
   );
 };

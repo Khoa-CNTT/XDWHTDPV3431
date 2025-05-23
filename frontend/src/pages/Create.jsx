@@ -165,7 +165,7 @@ const Create = () => {
       </div>
 
       <form className="create-form" onSubmit={handleSubmit}>
-        <div className="form-group">
+        <div className="form-group project-title">
           <label htmlFor="title">Tên Dự Án</label>
           <input
             type="text"
@@ -352,7 +352,7 @@ const Create = () => {
           />
         </div>
 
-        <button type="submit" className="submit-button" disabled={isSubmitting}>
+        <button type="submit" className="submit-btn" disabled={isSubmitting}>
           {isSubmitting ? (
             <>
               <FaSpinner className="spinner" />

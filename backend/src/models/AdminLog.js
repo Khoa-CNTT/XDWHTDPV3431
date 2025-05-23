@@ -36,4 +36,4 @@ const AdminLog = sequelize.define('AdminLog', {
   timestamps: false
 });
 
-module.exports = { AdminLog };
+module.exports = AdminLog;

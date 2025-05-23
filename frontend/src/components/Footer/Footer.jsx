@@ -14,7 +14,7 @@ const Footer = () => {
           <Link to="/projects">Các dự án</Link>
           <Link to="/create">Tạo dự án</Link>
           <Link to="/donate">Quyên góp</Link>
-          <Link to="/guide">Hướng dẫn</Link>
+          <Link to="/guide">Minh bạch</Link>
         </div>
         <div className="footer-contact">
           <p>Email: gioankhanhthanh03@gmail.com</p>

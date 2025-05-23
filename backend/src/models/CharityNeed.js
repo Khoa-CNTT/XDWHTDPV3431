@@ -6,44 +6,73 @@ class CharityNeed extends Model {}
 CharityNeed.init({
   id: {
     type: DataTypes.INTEGER,
+    autoIncrement: true,
     primaryKey: true,
-    autoIncrement: true
   },
   title: {
-    type: DataTypes.STRING,
-    allowNull: false
+    type: DataTypes.STRING(255),
+    allowNull: false,
   },
-  description: {
+  organization_name: {
+    type: DataTypes.STRING(255),
+    allowNull: false,
+  },
+  location: {
+    type: DataTypes.STRING(255),
+    allowNull: false,
+  },
+  target_group: {
+    type: DataTypes.STRING(255),
+    allowNull: false,
+  },
+  items_needed: {
     type: DataTypes.TEXT,
-    allowNull: false
+    allowNull: false,
   },
-  amount_needed: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: false
+  image: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
   },
-  amount_raised: {
-    type: DataTypes.DECIMAL(10, 2),
-    defaultValue: 0
+  raised_amount: {
+    type: DataTypes.DECIMAL(20, 8),
+    defaultValue: 0,
+  },
+  funding_goal: {
+    type: DataTypes.DECIMAL(20, 8),
+    allowNull: false,
+  },
+  raised_percent: {
+    type: DataTypes.DECIMAL(5, 2),
+    defaultValue: 0,
+  },
+  blockchain_link: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+  },
+  project_link: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+  },
+  fund_avatar: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+  },
+  is_interested: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
   },
   status: {
-    type: DataTypes.ENUM('pending', 'active', 'completed', 'rejected'),
-    defaultValue: 'pending'
+    type: DataTypes.ENUM('pending', 'approved', 'rejected'),
+    defaultValue: 'pending',
+    allowNull: false
   },
   created_by: {
     type: DataTypes.INTEGER,
-    allowNull: false,
     references: {
       model: 'users',
-      key: 'id'
-    }
-  },
-  created_at: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW
-  },
-  updated_at: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW
+      key: 'id',
+    },
+    onDelete: 'SET NULL',
   }
 }, {
   sequelize,

@@ -26,6 +26,12 @@ module.exports = {
         type: Sequelize.ENUM('user', 'admin'),
         defaultValue: 'user',
       },
+      wallet_address: {
+        type: Sequelize.STRING(42),
+        allowNull: true,
+        unique: true,
+        after: 'role'
+      },
       reset_token: {
         type: Sequelize.STRING(255),
         allowNull: true,

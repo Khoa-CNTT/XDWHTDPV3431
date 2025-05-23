@@ -1,65 +1,62 @@
 const errorHandler = (err, req, res, next) => {
-  console.error('Error:', err);
+  console.error(err.stack);
 
-  // Lỗi validation từ Sequelize
+  // Validation error
+  if (err.name === 'ValidationError') {
+    return res.status(400).json({
+      errors: Object.values(err.errors).map(error => ({
+        msg: error.message,
+        param: error.path,
+        location: 'body'
+      }))
+    });
+  }
+
+  // Sequelize validation error
   if (err.name === 'SequelizeValidationError') {
     return res.status(400).json({
-      error: err.errors.map(e => e.message)
+      errors: err.errors.map(error => ({
+        msg: error.message,
+        param: error.path,
+        location: 'body'
+      }))
     });
   }
 
-  // Lỗi unique constraint từ Sequelize
+  // Sequelize unique constraint error
   if (err.name === 'SequelizeUniqueConstraintError') {
     return res.status(400).json({
-      error: 'Dữ liệu đã tồn tại'
+      errors: err.errors.map(error => ({
+        msg: error.message,
+        param: error.path,
+        location: 'body'
+      }))
     });
   }
 
-  // Lỗi không tìm thấy từ Sequelize
-  if (err.name === 'SequelizeNotFoundError') {
-    return res.status(404).json({
-      error: 'Không tìm thấy dữ liệu'
-    });
-  }
-
-  // Lỗi xác thực JWT
+  // JWT error
   if (err.name === 'JsonWebTokenError') {
     return res.status(401).json({
-      error: 'Token không hợp lệ'
+      message: 'Invalid token'
     });
   }
 
-  // Lỗi token hết hạn
   if (err.name === 'TokenExpiredError') {
     return res.status(401).json({
-      error: 'Token đã hết hạn'
+      message: 'Token expired'
     });
   }
 
-  // Lỗi 404
+  // Not found error
   if (err.status === 404) {
     return res.status(404).json({
-      error: err.message || 'Không tìm thấy tài nguyên'
+      message: err.message || 'Not Found'
     });
   }
 
-  // Lỗi 400
-  if (err.status === 400) {
-    return res.status(400).json({
-      error: err.message || 'Yêu cầu không hợp lệ'
-    });
-  }
-
-  // Lỗi 401
-  if (err.status === 401) {
-    return res.status(401).json({
-      error: err.message || 'Không có quyền truy cập'
-    });
-  }
-
-  // Lỗi mặc định
-  return res.status(500).json({
-    error: 'Lỗi server'
+  // Default error
+  res.status(err.status || 500).json({
+    message: err.message || 'Internal Server Error'
   });
 };
 

@@ -33,6 +33,11 @@ module.exports = {
           type: Sequelize.DECIMAL(10, 2),
           allowNull: false,
         },
+        message: {
+          type: Sequelize.TEXT,
+          allowNull: true,
+          after: 'amount'
+        },
         status: {
           type: Sequelize.ENUM('pending', 'confirmed', 'rejected'),
           defaultValue: 'pending',

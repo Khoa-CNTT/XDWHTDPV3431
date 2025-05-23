@@ -10,6 +10,7 @@ const Transparency = () => {
   const [charityNeeds, setCharityNeeds] = useState([]);
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [lastUpdate, setLastUpdate] = useState(Date.now());
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,6 +34,21 @@ const Transparency = () => {
     };
 
     fetchData();
+  }, [lastUpdate]);
+
+  const refreshData = () => {
+    setLastUpdate(Date.now());
+  };
+
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'newDonation') {
+        refreshData();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   if (loading) {

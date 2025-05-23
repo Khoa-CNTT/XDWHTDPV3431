@@ -7,8 +7,8 @@ const {
   handlePaymentSuccess,
   handlePaymentCancel
 } = require('../controllers/donationController');
-const { authMiddleware } = require('../middleware/authMiddleware');
-const { validateDonation } = require('../middleware/validationMiddleware');
+const { authMiddleware } = require('../middlewares/authMiddleware');
+const { validateDonation } = require('../middlewares/validationMiddleware');
 
 // Public routes
 router.get('/', getAllDonations);

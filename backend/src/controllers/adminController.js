@@ -1,4 +1,5 @@
-const { User, Contribution, CharityNeed, Evaluation } = require('../models');
+const { User, Contribution, CharityNeed, Evaluation, AdminLog } = require('../models');
+const { logAdminAction } = require('../services/adminLogService');
 
 // Get admin dashboard stats
 const getStats = async (req, res) => {
@@ -24,14 +25,16 @@ const changeUserRole = async (req, res) => {
   const { id } = req.params;
   const { role } = req.body;
   await User.update({ role }, { where: { id } });
+  await logAdminAction(req.user.id, `Changed user role to ${role}`, 'users', id);
   res.json({ message: 'User role updated successfully' });
 };
 
 // Lock/Unlock user
 const lockUser = async (req, res) => {
   const { id } = req.params;
-  const { isLocked } = req.body;
+  const isLocked = req.body.isLocked ? 1 : 0;
   await User.update({ isLocked }, { where: { id } });
+  await logAdminAction(req.user.id, isLocked ? 'Locked user' : 'Unlocked user', 'users', id);
   res.json({ message: 'User status updated successfully' });
 };
 
@@ -39,6 +42,7 @@ const lockUser = async (req, res) => {
 const deleteUser = async (req, res) => {
   const { id } = req.params;
   await User.destroy({ where: { id } });
+  await logAdminAction(req.user.id, 'Deleted user', 'users', id);
   res.json({ message: 'User deleted successfully' });
 };
 
@@ -52,15 +56,29 @@ const getCharityNeeds = async (req, res) => {
 
 // Approve charity need
 const approveCharityNeed = async (req, res) => {
-  const { id } = req.params;
-  await CharityNeed.update({ status: 'active' }, { where: { id } });
-  res.json({ message: 'Charity need approved successfully' });
+  try {
+    const { id } = req.params;
+    const charityNeed = await CharityNeed.findByPk(id);
+    
+    if (!charityNeed) {
+      return res.status(404).json({ message: 'Charity need not found' });
+    }
+
+    await charityNeed.update({ status: 'approved' });
+    await logAdminAction(req.user.id, 'Approved charity need', 'charity_needs', id);
+
+    res.json({ message: 'Charity need approved successfully' });
+  } catch (error) {
+    console.error('Error approving charity need:', error);
+    res.status(500).json({ message: 'Error approving charity need' });
+  }
 };
 
 // Reject charity need
 const rejectCharityNeed = async (req, res) => {
   const { id } = req.params;
   await CharityNeed.update({ status: 'rejected' }, { where: { id } });
+  await logAdminAction(req.user.id, 'Rejected charity need', 'charity_needs', id);
   res.json({ message: 'Charity need rejected successfully' });
 };
 
@@ -68,6 +86,7 @@ const rejectCharityNeed = async (req, res) => {
 const deleteCharityNeed = async (req, res) => {
   const { id } = req.params;
   await CharityNeed.destroy({ where: { id } });
+  await logAdminAction(req.user.id, 'Deleted charity need', 'charity_needs', id);
   res.json({ message: 'Charity need deleted successfully' });
 };
 
@@ -86,20 +105,21 @@ const getDonations = async (req, res) => {
 const sendNotification = async (req, res) => {
   const { title, content, target } = req.body;
   // TODO: Implement notification system
+  await logAdminAction(req.user.id, `Sent notification: ${title}`, 'notifications', null);
   res.json({ message: 'Notification sent successfully' });
 };
 
 // Get admin logs
 const getLogs = async (req, res) => {
-  const evaluations = await Evaluation.findAll({
+  const logs = await AdminLog.findAll({
     order: [['created_at', 'DESC']],
     include: [{ 
-      model: User, 
-      as: 'evaluator',
-      foreignKey: 'evaluator_id'
+      model: User,
+      as: 'admin',
+      foreignKey: 'admin_id'
     }]
   });
-  res.json(evaluations);
+  res.json(logs);
 };
 
 module.exports = {

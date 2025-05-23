@@ -1,5 +1,5 @@
 const { Sequelize } = require('sequelize');
-const sequelize = require('../config/database');
+const config = require('../config/database');
 
 // Import models
 const User = require('./User');
@@ -8,6 +8,7 @@ const TransparencyReport = require('./TransparencyReport');
 const Contribution = require('./Contribution');
 const Feedback = require('./Feedback');
 const Evaluation = require('./Evaluation');
+const AdminLog = require('./AdminLog');
 
 // Define associations
 const setupAssociations = () => {
@@ -19,7 +20,7 @@ const setupAssociations = () => {
 
   User.hasMany(CharityNeed, { 
     foreignKey: 'created_by',
-    as: 'charity_needs'
+    as: 'charityNeeds'
   });
 
   User.hasMany(TransparencyReport, { 
@@ -35,6 +36,11 @@ const setupAssociations = () => {
   User.hasMany(Evaluation, { 
     foreignKey: 'user_id',
     as: 'evaluations'
+  });
+
+  User.hasMany(AdminLog, {
+    foreignKey: 'admin_id',
+    as: 'adminLogs'
   });
 
   // CharityNeed associations
@@ -67,7 +73,7 @@ const setupAssociations = () => {
   // TransparencyReport associations
   TransparencyReport.belongsTo(User, { 
     foreignKey: 'created_by',
-    as: 'created_by'
+    as: 'creator'
   });
 
   // Feedback associations
@@ -86,6 +92,12 @@ const setupAssociations = () => {
     foreignKey: 'need_id',
     as: 'need'
   });
+
+  // AdminLog associations
+  AdminLog.belongsTo(User, {
+    foreignKey: 'admin_id',
+    as: 'admin'
+  });
 };
 
 // Setup associations
@@ -93,7 +105,7 @@ setupAssociations();
 
 // Export models and sequelize instance
 module.exports = {
-  sequelize,
+  sequelize: config,
   Sequelize,
   Op: Sequelize.Op,
   User,
@@ -101,5 +113,6 @@ module.exports = {
   TransparencyReport,
   Contribution,
   Feedback,
-  Evaluation
+  Evaluation,
+  AdminLog
 };

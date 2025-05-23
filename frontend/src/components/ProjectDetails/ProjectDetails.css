@@ -1,72 +1,170 @@
 .project-details {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px;
-    text-align: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.loading-container,
+.error-container {
+  text-align: center;
+  padding: 2rem;
+  margin: 2rem auto;
+  max-width: 600px;
+}
+
+.loading {
+  color: #666;
+  font-size: 1.2rem;
+}
+
+.error {
+  color: #dc3545;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.back-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.back-button:hover {
+  background-color: #0056b3;
+}
+
+.project-title {
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.project-image {
+  width: 100%;
+  max-height: 500px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.project-info-container {
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.project-info {
+  margin: 0.5rem 0;
+  font-size: 1.1rem;
+  color: #444;
+}
+
+.project-info strong {
+  color: #333;
+  margin-right: 0.5rem;
+}
+
+.donate-button {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  margin: 2rem auto;
+  padding: 1rem 2rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.donate-button:hover {
+  background-color: #218838;
+}
+
+.contributions-section {
+  margin-top: 3rem;
+}
+
+.project-subtitle {
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.transaction-list {
+  list-style: none;
+  padding: 0;
+}
+
+.transaction-item {
+  background-color: white;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 1rem;
+  align-items: center;
+}
+
+.donor-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.donation-amount {
+  color: #28a745;
+  font-weight: 500;
+}
+
+.donation-date {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.donation-message {
+  grid-column: 1 / -1;
+  margin: 0.5rem 0 0;
+  padding-top: 0.5rem;
+  border-top: 1px solid #dee2e6;
+  color: #666;
+  font-style: italic;
+}
+
+.no-transactions {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 2rem;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+  .project-details {
+    padding: 1rem;
   }
-  
+
   .project-title {
-    font-size: 24px;
-    margin-bottom: 20px;
-    color: #333;
+    font-size: 2rem;
   }
-  
-  .project-image {
-    max-width: 100%;
-    height: auto;
-    margin-bottom: 20px;
-    border-radius: 5px;
-  }
-  
-  .project-info {
-    font-size: 16px;
-    margin: 10px 0;
-  }
-  
-  .project-subtitle {
-    font-size: 20px;
-    margin: 20px 0 10px;
-    color: #444;
-  }
-  
-  .transaction-list {
-    list-style-type: none;
-    padding: 0;
-    text-align: left;
-  }
-  
+
   .transaction-item {
-    padding: 5px 0;
-    border-bottom: 1px solid #eee;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
   }
-  
-  .no-transactions {
-    font-style: italic;
-    color: #666;
+
+  .donation-date {
+    font-size: 0.8rem;
   }
-  
-  .donate-button {
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .donate-button:hover {
-    background-color: #218838;
-  }
-  
-  .loading {
-    text-align: center;
-    font-size: 18px;
-  }
-  
-  .error {
-    text-align: center;
-    font-size: 18px;
-    color: red;
-  }
+}

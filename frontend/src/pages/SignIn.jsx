@@ -36,8 +36,8 @@ const SignInForm = () => {
       setError("");
       setSubmitted(true);
     } catch (err) {
-      if (err.response?.data?.error) {
-        setError(err.response.data.error);
+      if (err.response?.data?.error?.message) {
+        setError(err.response.data.error.message);
       } else if (err.message === 'Network Error') {
         setError("Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet của bạn.");
       } else if (err.response?.status === 401) {

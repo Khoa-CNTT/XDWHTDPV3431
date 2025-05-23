@@ -60,51 +60,63 @@
   display: flex;
   align-items: center;
   background: #fff;
-  border-radius: 25px;
-  padding: 0 0 0 16px;
+  border-radius: 999px;
+  padding: 0;
   border: 2px solid #e3eaf2;
-  height: 40px;
-  min-width: 250px;
-  max-width: 350px;
+  height: 44px;
+  min-width: 260px;
+  max-width: 340px;
   width: 100%;
   box-sizing: border-box;
-  box-shadow: none;
-  margin: 0;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  overflow: hidden;
+}
+
+.search-container:focus-within {
+  border-color: #ED1651;
+  box-shadow: 0 0 0 2px rgba(237, 22, 81, 0.15);
 }
 
 .search-input {
   border: none;
   outline: none;
-  padding: 0 10px 0 0;
+  padding: 0 16px;
   font-size: 16px;
   background: transparent;
-  flex: 1;
-  height: 38px;
+  flex: 10 1 0%;
+  height: 100%;
+  color: #374151;
+  border-radius: 0;
+  margin: 0;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
-.search-input:focus {
-  border: none;
-  outline: none;
+.search-input::placeholder {
+  color: #94A3B8;
+  font-size: 15px;
 }
 
 .search-icon {
-  background: none;
+  background: #fff !important;
   border: none;
   cursor: pointer;
-  color: #666;
-  transition: color 0.3s;
-  font-size: 26px;
+  color: #222 !important;
+  font-size: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 38px;
-  width: 38px;
-  margin-left: 0;
-  margin-right: 4px;
+  height: 100%;
+  width: 40px;
+  border-radius: 0;
+  margin: 0;
+  transition: background 0.2s, color 0.2s;
+  box-shadow: none;
 }
 
 .search-icon:hover {
-  color: #ED1651;
+  background: #f8e6ec;
+  color: #ED1651 !important;
 }
 
 .auth-button {
@@ -144,13 +156,13 @@
   box-sizing: border-box;
   padding: 12px 20px;
   border: none;
-  background: none;
+  background: #fff;
   text-align: left;
   cursor: pointer;
   font-size: 1rem;
   color: #374151;
   font-family: inherit;
-  transition: background 0.2s, color 0.2s;
+  transition: color 0.2s;
   letter-spacing: 0.01em;
   white-space: nowrap;
   display: block;
@@ -159,17 +171,18 @@
 }
 
 .account-menu-btn:hover {
-  background: #f5e6e6;
+  background: #fff;
   color: #ED1651;
 }
 
 .account-menu-btn.logout {
   color: #ED1651;
   font-weight: 500;
+  background: #fff;
 }
 
 .account-menu-btn.logout:hover {
-  background: #ffe6ec;
+  background: #fff;
   color: #b3133a;
 }
 
@@ -186,4 +199,26 @@
   font-size: 1.2rem;
   margin-right: 0;
   box-shadow: 0 2px 8px rgba(237,22,81,0.10);
+}
+
+.wallet-button {
+  background: none;
+  border: none;
+  color: #333;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 8px;
+  margin-right: 10px;
+  transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wallet-button:hover {
+  color: #007bff;
+}
+
+.wallet-button[title*="Đã kết nối"] {
+  color: #28a745;
 }

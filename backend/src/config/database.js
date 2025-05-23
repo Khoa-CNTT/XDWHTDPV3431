@@ -2,13 +2,18 @@ const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
 const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASSWORD,
+  process.env.DB_NAME || 'charity_system',
+  process.env.DB_USER || 'root',
+  process.env.DB_PASSWORD || '',
   {
-    host: process.env.DB_HOST,
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT,
     dialect: 'mysql',
     logging: false, // Tắt log SQL queries
+    define: {
+      timestamps: true,
+      underscored: true
+    },
     pool: {
       max: 5,
       min: 0,

@@ -1,14 +1,27 @@
 const { CharityNeed } = require('../models');
 
 const getAll = async ({ created_by, limit, offset }) => {
-  const where = {};
-  if (created_by) where.created_by = created_by;
+  try {
+    const where = {};
+    if (created_by) where.created_by = created_by;
 
-  return await CharityNeed.findAll({
-    where,
-    limit: parseInt(limit),
-    offset: parseInt(offset),
-  });
+    const options = {
+      where,
+      order: [['created_at', 'DESC']]
+    };
+
+    if (limit && !isNaN(parseInt(limit))) {
+      options.limit = parseInt(limit);
+    }
+    if (offset && !isNaN(parseInt(offset))) {
+      options.offset = parseInt(offset);
+    }
+
+    return await CharityNeed.findAll(options);
+  } catch (error) {
+    console.error('Error in charityNeedRepository.getAll:', error);
+    throw error;
+  }
 };
 
 const count = async (filters) => {
@@ -17,7 +30,6 @@ const count = async (filters) => {
 
 const create = async ({ 
   title, 
-  description,
   organization_name,
   location,
   target_group,
@@ -31,7 +43,6 @@ const create = async ({
 }) => {
   return await CharityNeed.create({
     title,
-    description,
     organization_name,
     location,
     target_group,
@@ -45,4 +56,8 @@ const create = async ({
   });
 };
 
-module.exports = { getAll, count, create };
+const findById = async (id) => {
+  return await CharityNeed.findByPk(id);
+};
+
+module.exports = { getAll, count, create, findById };
